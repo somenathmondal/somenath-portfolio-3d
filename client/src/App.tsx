@@ -2,18 +2,11 @@ import { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { usePortfolio } from "./lib/stores/usePortfolio";
 import LandingPage from "./components/LandingPage";
-import Portfolio from "./components/Portfolio";
-import ContactSection from "./components/ContactSection";
-import Navigation from "./components/Navigation";
 import LoadingScreen from "./components/LoadingScreen";
-import ScrollCV from "./components/ScrollCV";
-import CustomCursor from "./components/CustomCursor";
-import { useScrollSection } from "./hooks/useScrollSection";
 import "@fontsource/inter";
 
 function App() {
   const { isLoading, setLoading } = usePortfolio();
-  const { currentSection } = useScrollSection();
   const [showCanvas, setShowCanvas] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -24,37 +17,21 @@ function App() {
       setShowCanvas(true);
     }, 2000);
 
-    // Handle scroll events for CV reveal
+    // Handle scroll events (optional, kept for LandingPage if needed)
     const handleScroll = (event: WheelEvent) => {
-      if (currentSection === 'landing') {
-        event.preventDefault();
-        setScrollProgress(prev => {
-          const newValue = prev + event.deltaY * 0.0008;
-          return Math.max(0, Math.min(1, newValue));
-        });
-      }
+      setScrollProgress(prev => {
+        const newValue = prev + event.deltaY * 0.0008;
+        return Math.max(0, Math.min(1, newValue));
+      });
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (currentSection === 'landing') {
-        if (event.key === 'ArrowDown' || event.key === 'PageDown') {
-          setScrollProgress(prev => Math.min(1, prev + 0.1));
-        }
-        if (event.key === 'ArrowUp' || event.key === 'PageUp') {
-          setScrollProgress(prev => Math.max(0, prev - 0.1));
-        }
-      }
-    };
-
-    document.addEventListener('wheel', handleScroll, { passive: false });
-    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('wheel', handleScroll, { passive: false });
 
     return () => {
       clearTimeout(timer);
-      document.removeEventListener('wheel', handleScroll);
-      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('wheel', handleScroll);
     };
-  }, [setLoading, currentSection]);
+  }, [setLoading]);
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -62,9 +39,6 @@ function App() {
 
   return (
     <div className="w-full h-full relative" style={{ background: '#e5e5e5' }}>
-      {/* <Navigation /> */}
-      {/* <CustomCursor /> */}
-      
       {showCanvas && (
         <Canvas
           dpr={[1, 2]}
@@ -86,17 +60,6 @@ function App() {
           </Suspense>
         </Canvas>
       )}
-
-      {/* Overlay content */}
-      <div className="absolute inset-0 pointer-events-none z-20">
-        <div className="pointer-events-auto">
-          {currentSection === 'portfolio' && <Portfolio />}
-          {currentSection === 'contact' && <ContactSection />}
-        </div>
-      </div>
-
-      {/* CV Scroll overlay - only show on landing page */}
-      {currentSection === 'landing' && <ScrollCV scrollProgress={scrollProgress} />}
     </div>
   );
 }
