@@ -109,6 +109,8 @@ function InteractiveLetter({
 
 export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   const { viewport } = useThree();
+  const isMobile = viewport.width < 7;
+  
   const [params, setParams] = useState<DebugParams>({
     letterSize: 2.0,
     springVelocity: 0.04,
@@ -138,7 +140,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
     return () => {
       pane.dispose();
     };
-  }, [viewport.width]);
+  }, []);
 
   return (
     <>
@@ -149,53 +151,50 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
       <spotLight position={[15, 15, 10]} angle={0.25} penumbra={1} intensity={1.5} castShadow />
       <pointLight position={[-10, -10, -10]} color="#ffffff" intensity={0.5} />
 
-      {/* Post-processing for that cinematic look */}
       <EffectComposer disableNormalPass>
         <Bloom luminanceThreshold={1} mipmapBlur intensity={0.5} radius={0.4} />
         <Noise opacity={0.02} />
       </EffectComposer>
 
-      <group position={[0, -0.2, 0]}>
+      <group position={[0, isMobile ? 0.5 : -0.2, 0]}>
         <InteractiveLetter 
           char="S" 
-          position={[-0.45, 0, 0]} 
+          position={isMobile ? [0, 1, 0] : [-0.45, 0, 0]} 
           color="#9edbb7" 
           font="/fonts/font.json" 
           params={params}
         />
         <InteractiveLetter 
           char="M" 
-          position={[0.45, 0, 0]} 
+          position={isMobile ? [0, -1, 0] : [0.45, 0, 0]} 
           color="#b0c4de" 
           font="/fonts/font.json" 
           params={params}
         />
         
-        {/* Soft shadows beneath the letters */}
         <ContactShadows
-          position={[0, -1.5, 0]}
+          position={[0, isMobile ? -2.5 : -1.5, 0]}
           opacity={0.4}
-          scale={15}
+          scale={isMobile ? 10 : 15}
           blur={2}
           far={4.5}
         />
       </group>
 
-      {/* Structured Editorial Layout Overlay */}
       <Html fullscreen style={{ pointerEvents: 'none' }}>
         <div className="w-full h-full relative overflow-hidden select-none">
           
-          <header className="absolute top-0 left-0 w-full p-12 flex justify-between items-start z-30 pointer-events-none">
+          <header className="absolute top-0 left-0 w-full p-8 md:p-12 flex justify-between items-start z-30 pointer-events-none">
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.2 }}
               className="flex flex-col pointer-events-auto"
             >
-              <h1 className="text-5xl font-serif italic text-black leading-tight">
+              <h1 className="text-3xl md:text-5xl font-serif italic text-black leading-tight">
                 Somenath Mondal
               </h1>
-              <span className="text-[10px] tracking-[0.5em] uppercase text-zinc-400 font-medium mt-1">
+              <span className="text-[8px] md:text-[10px] tracking-[0.3em] md:tracking-[0.5em] uppercase text-zinc-400 font-medium mt-1">
                 Portfolio Showcase / Vol. 1
               </span>
             </motion.div>
@@ -206,61 +205,61 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
               transition={{ duration: 1, delay: 0.4 }}
               className="text-right flex flex-col items-end pointer-events-auto"
             >
-              <span className="text-[10px] tracking-[0.4em] uppercase text-zinc-500 font-bold mb-2">
-                Available for Projects
+              <span className="text-[8px] md:text-[10px] tracking-[0.4em] uppercase text-zinc-500 font-bold mb-2">
+                Available
               </span>
-              <div className="w-16 h-px bg-black" />
+              <div className="w-8 md:w-16 h-px bg-black" />
             </motion.div>
           </header>
 
           <main className="w-full h-full flex flex-col items-center justify-center pointer-events-none">
-            <div className="max-w-7xl w-full px-12 grid grid-cols-12 gap-8 items-center">
+            <div className="max-w-7xl w-full px-8 md:px-12 grid grid-cols-12 gap-4 md:gap-8 items-center">
               
               <motion.div 
-                className="col-span-3"
+                className="col-span-12 md:col-span-3 order-2 md:order-1 mt-32 md:mt-0"
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 1, delay: 0.6 }}
               >
-                <div className="w-8 h-px bg-zinc-300 mb-6" />
-                <p className="text-sm font-serif italic text-zinc-600 leading-relaxed max-w-[200px]">
+                <div className="hidden md:block w-8 h-px bg-zinc-300 mb-6" />
+                <p className="text-xs md:text-sm font-serif italic text-zinc-600 leading-relaxed max-w-[150px] md:max-w-[200px]">
                   "Crafting immersive 3D experiences that blur the line between reality & imagination."
                 </p>
               </motion.div>
 
-              <div className="col-span-6" />
+              <div className="col-span-12 md:col-span-6 h-48 md:h-0 order-1 md:order-2" />
 
               <motion.div 
-                className="col-span-3 text-right flex flex-col items-end"
+                className="col-span-12 md:col-span-3 text-right flex flex-col items-end order-3"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 1, delay: 0.8 }}
               >
-                <h2 className="text-3xl font-serif text-black leading-tight mb-4">
+                <h2 className="text-xl md:text-3xl font-serif text-black leading-tight mb-2 md:mb-4">
                   Dreams <span className="italic">in</span> Pixels
                 </h2>
-                <p className="text-[10px] tracking-[0.2em] uppercase text-zinc-400 max-w-[150px]">
-                  Refraction, iridescence & a sprinkle of magic
+                <p className="text-[8px] md:text-[10px] tracking-[0.2em] uppercase text-zinc-400 max-w-[120px] md:max-w-[150px]">
+                  Refraction & magic
                 </p>
-                <div className="w-8 h-px bg-zinc-300 mt-6" />
+                <div className="hidden md:block w-8 h-px bg-zinc-300 mt-6" />
               </motion.div>
             </div>
           </main>
 
-          <footer className="absolute bottom-0 left-0 w-full p-12 flex justify-between items-end z-30 pointer-events-none">
+          <footer className="absolute bottom-0 left-0 w-full p-8 md:p-12 flex flex-col md:flex-row justify-between items-center md:items-end z-30 pointer-events-none gap-8 md:gap-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 1 }}
-              className="flex gap-12 pointer-events-auto"
+              className="flex gap-8 md:gap-12 pointer-events-auto"
             >
               <div className="flex flex-col">
-                <span className="text-[9px] tracking-widest uppercase text-zinc-400 mb-1">Location</span>
-                <span className="text-xs text-black font-medium">Bangalore, India</span>
+                <span className="text-[8px] md:text-[9px] tracking-widest uppercase text-zinc-400 mb-1">Location</span>
+                <span className="text-[10px] md:text-xs text-black font-medium text-center md:text-left">Bangalore, India</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[9px] tracking-widest uppercase text-zinc-400 mb-1">Expertise</span>
-                <span className="text-xs text-black font-medium">XR / WebGL / iOS</span>
+                <span className="text-[8px] md:text-[9px] tracking-widest uppercase text-zinc-400 mb-1">Expertise</span>
+                <span className="text-[10px] md:text-xs text-black font-medium text-center md:text-left">XR / WebGL / iOS</span>
               </div>
             </motion.div>
 
@@ -268,9 +267,9 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 1.2 }}
-              className="text-center pb-4"
+              className="text-center pb-0 md:pb-4 order-first md:order-none"
             >
-              <h2 className="text-9xl font-serif text-black tracking-tighter leading-none opacity-5">
+              <h2 className="text-6xl md:text-9xl font-serif text-black tracking-tighter leading-none opacity-5">
                 Poke <span className="italic">them!</span>
               </h2>
             </motion.div>
@@ -279,15 +278,15 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 1.4 }}
-              className="flex flex-col items-end gap-4 pointer-events-auto"
+              className="flex flex-col items-center md:items-end gap-2 md:gap-4 pointer-events-auto"
             >
-              <div className="flex gap-8">
-                <a href="https://www.linkedin.com/in/somenath-mondal-xr-tech/" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-widest uppercase text-black font-bold border-b border-black">LinkedIn</a>
-                <a href="https://github.com/somenathmondal" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-widest uppercase text-black font-bold border-b border-black">GitHub</a>
-                <a href="https://www.youtube.com/@IITPodcastwithSomenath" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-widest uppercase text-black font-bold border-b border-black">YouTube</a>
-                <a href="https://open.spotify.com/show/2OkRCNNTbwaAB2CElTDdYH?si=9_ikF-n-RBexQXMuwvxr9g" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-widest uppercase text-black font-bold border-b border-black">Spotify Podcast</a>
+              <div className="flex gap-4 md:gap-8 flex-wrap justify-center">
+                <a href="https://www.linkedin.com/in/somenath-mondal-xr-tech/" target="_blank" rel="noopener noreferrer" className="text-[8px] md:text-[10px] tracking-widest uppercase text-black font-bold border-b border-black">LinkedIn</a>
+                <a href="https://github.com/somenathmondal" target="_blank" rel="noopener noreferrer" className="text-[8px] md:text-[10px] tracking-widest uppercase text-black font-bold border-b border-black">GitHub</a>
+                <a href="https://www.youtube.com/@IITPodcastwithSomenath" target="_blank" rel="noopener noreferrer" className="text-[8px] md:text-[10px] tracking-widest uppercase text-black font-bold border-b border-black">YouTube</a>
+                <a href="https://open.spotify.com/show/2OkRCNNTbwaAB2CElTDdYH?si=9_ikF-n-RBexQXMuwvxr9g" target="_blank" rel="noopener noreferrer" className="text-[8px] md:text-[10px] tracking-widest uppercase text-black font-bold border-b border-black text-center">Spotify Podcast</a>
               </div>
-              <span className="text-[9px] tracking-[0.5em] uppercase text-zinc-400">© 2026 Edition</span>
+              <span className="text-[8px] md:text-[9px] tracking-[0.5em] uppercase text-zinc-400">© 2026 Edition</span>
             </motion.div>
           </footer>
         </div>
