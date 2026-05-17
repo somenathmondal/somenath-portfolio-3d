@@ -110,11 +110,11 @@ function InteractiveLetter({
 export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   const { viewport } = useThree();
   const [params, setParams] = useState<DebugParams>({
-    letterSize: viewport.width > 10 ? 2.5 : 1.5,
-    springVelocity: 0.05,
-    influenceRadius: 3,
-    damping: 0.92,
-    pushForce: 0.8
+    letterSize: 2.0,
+    springVelocity: 0.04,
+    influenceRadius: 2.0,
+    damping: 0.90,
+    pushForce: 0.6
   });
 
   useEffect(() => {
