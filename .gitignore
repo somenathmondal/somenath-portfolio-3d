@@ -1,0 +1,25 @@
+# Node
+node_modules
+dist
+.env
+.DS_Store
+
+# Vite
+*.local
+dist-ssr
+
+# Build
+dist/
+build/
+out/
+
+# IDE
+.vscode
+.idea
+.fleet
+.hx
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
