@@ -1,14 +1,13 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Float, Html, MeshTransmissionMaterial, Environment, Text3D, Center, ContactShadows } from "@react-three/drei";
+import { Float, Html, MeshTransmissionMaterial, Environment, Text3D, Center, ContactShadows, Text } from "@react-three/drei";
 import { EffectComposer, Bloom, Noise } from "@react-three/postprocessing";
+import { Perf } from "r3f-perf";
 import * as THREE from "three";
 import { motion } from "framer-motion";
 import { Pane } from "tweakpane";
 
-interface LandingPageProps {
-  scrollProgress: number;
-}
+interface LandingPageProps { scrollProgress: number; }
 
 interface DebugParams {
   letterSize: number;
@@ -17,38 +16,29 @@ interface DebugParams {
   influenceRadius: number;
   damping: number;
   pushForce: number;
+  showPerf: boolean;
 }
 
-function InteractiveLetter({ 
-  char, 
-  targetPosition, 
-  color, 
-  font, 
-  params 
-}: { 
-  char: string, 
-  targetPosition: [number, number, number], 
-  color: string, 
-  font: string,
-  params: DebugParams
+function InteractiveLetter({ char, targetPosition, color, font, params }: { 
+  char: string, targetPosition: [number, number, number], color: string, font: string, params: DebugParams 
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const { viewport } = useThree();
-  
   const velocity = useMemo(() => new THREE.Vector3(), []);
   const targetPosVec = useMemo(() => new THREE.Vector3(...targetPosition), []);
   const targetRotation = useMemo(() => new THREE.Euler(), []);
   const [hasMoved, setHasMoved] = useState(false);
 
   useEffect(() => {
-    const handleMove = () => setHasMoved(true);
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('touchstart', handleMove);
+    const handleMove = () => {
+      if (!hasMoved) setHasMoved(true);
+    };
+    window.addEventListener('mousemove', handleMove, { passive: true });
+    window.addEventListener('touchstart', handleMove, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('touchstart', handleMove);
     };
-  }, []);
+  }, [hasMoved]);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -102,21 +92,7 @@ function InteractiveLetter({
         >
           {char}
           <MeshTransmissionMaterial
-            backside
-            backsideThickness={10}
-            thickness={1.5}
-            samples={16}
-            transmission={0.95}
-            clearcoat={1}
-            clearcoatRoughness={0}
-            chromaticAberration={0.8}
-            anisotropy={0.3}
-            roughness={0.0}
-            distortion={0.2}
-            distortionScale={0.1}
-            temporalDistortion={0.0}
-            color={color}
-            ior={1.2}
+            backside backsideThickness={10} thickness={1.5} samples={16} transmission={0.95} clearcoat={1} clearcoatRoughness={0} chromaticAberration={0.8} anisotropy={0.3} roughness={0.0} distortion={0.2} distortionScale={0.1} temporalDistortion={0.0} color={color} ior={1.2}
           />
         </Text3D>
       </Center>
@@ -134,18 +110,27 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
     springVelocity: 0.04,
     influenceRadius: 2.0,
     damping: 0.90,
-    pushForce: 0.6
+    pushForce: 0.1,
+    showPerf: false
   });
 
   useEffect(() => {
     if (window.location.hash !== "#debug") return;
     const pane = new Pane({ title: "Letter Physics Debug", expanded: true });
-    pane.addBinding(params, "letterSize", { min: 0.1, max: 5, step: 0.1 });
-    pane.addBinding(params, "letterSpacing", { min: -1, max: 2, step: 0.01 }); 
-    pane.addBinding(params, "springVelocity", { min: 0.01, max: 0.5, step: 0.01 });
-    pane.addBinding(params, "influenceRadius", { min: 0, max: 10, step: 0.1 });
-    pane.addBinding(params, "damping", { min: 0.8, max: 0.99, step: 0.01 });
-    pane.addBinding(params, "pushForce", { min: 0.1, max: 2, step: 0.1 });
+    
+    const f1 = pane.addFolder({ title: "Letters" });
+    f1.addBinding(params, "letterSize", { min: 0.1, max: 5, step: 0.1 });
+    f1.addBinding(params, "letterSpacing", { min: -1, max: 2, step: 0.01 }); 
+    
+    const f2 = pane.addFolder({ title: "Physics" });
+    f2.addBinding(params, "springVelocity", { min: 0.01, max: 0.5, step: 0.01 });
+    f2.addBinding(params, "influenceRadius", { min: 0, max: 10, step: 0.1 });
+    f2.addBinding(params, "damping", { min: 0.8, max: 0.99, step: 0.01 });
+    f2.addBinding(params, "pushForce", { min: 0, max: 0.2, step: 0.01 });
+    
+    const f3 = pane.addFolder({ title: "Diagnostics" });
+    f3.addBinding(params, "showPerf", { label: "Show Stats" });
+
     pane.on("change", (ev) => {
       setParams((prev) => ({ ...prev, [ev.target.key as string]: ev.value }));
     });
@@ -155,8 +140,9 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   return (
     <>
       <color attach="background" args={["#f0f0f0"]} />
-      <Environment preset="studio" />
+      {params.showPerf && <Perf position="bottom-right" minimal={isMobile} />}
       
+      <Environment preset="studio" />
       <ambientLight intensity={0.4} />
       <spotLight position={[15, 15, 10]} angle={0.25} penumbra={1} intensity={1.5} castShadow />
       <pointLight position={[-10, -10, -10]} color="#ffffff" intensity={0.5} />
@@ -166,8 +152,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
         <Noise opacity={0.02} />
       </EffectComposer>
 
-      {/* Vertically centered group with tighter vertical stacking on mobile */}
-      <group position={[0, isMobile ? 0 : -0.2, 0]}>
+      <group position={[0, isMobile ? 0 : 0.2, 0]}>
         <InteractiveLetter 
           char="S" 
           targetPosition={isMobile ? [0, params.letterSpacing / 2, 0] : [-params.letterSpacing, 0, 0]} 

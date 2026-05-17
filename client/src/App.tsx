@@ -8,7 +8,6 @@ import "@fontsource/inter";
 function App() {
   const { isLoading, setLoading } = usePortfolio();
   const [showCanvas, setShowCanvas] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     // Simulate loading time for assets
@@ -17,20 +16,7 @@ function App() {
       setShowCanvas(true);
     }, 2000);
 
-    // Handle scroll events (optional, kept for LandingPage if needed)
-    const handleScroll = (event: WheelEvent) => {
-      setScrollProgress(prev => {
-        const newValue = prev + event.deltaY * 0.0008;
-        return Math.max(0, Math.min(1, newValue));
-      });
-    };
-
-    window.addEventListener('wheel', handleScroll, { passive: false });
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('wheel', handleScroll);
-    };
+    return () => clearTimeout(timer);
   }, [setLoading]);
 
   if (isLoading) {
@@ -41,7 +27,7 @@ function App() {
     <div className="w-full h-full relative" style={{ background: '#e5e5e5' }}>
       {showCanvas && (
         <Canvas
-          dpr={[1, 2]}
+          dpr={[1, 1.5]} // Capping DPR at 1.5 for better performance
           camera={{
             position: [0, 0, 5],
             fov: 50,
@@ -56,7 +42,7 @@ function App() {
           className="absolute inset-0 z-10"
         >
           <Suspense fallback={null}>
-            <LandingPage scrollProgress={scrollProgress} />
+            <LandingPage scrollProgress={0} />
           </Suspense>
         </Canvas>
       )}
