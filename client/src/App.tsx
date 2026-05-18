@@ -1,8 +1,11 @@
 import { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
+import { ScrollControls, Scroll } from "@react-three/drei";
 import { usePortfolio } from "./lib/stores/usePortfolio";
 import LandingPage from "./components/LandingPage";
 import LoadingScreen from "./components/LoadingScreen";
+import ProjectShowcase from "./components/ProjectShowcase";
+import LandingHero from "./components/LandingHero";
 import "@fontsource/inter";
 
 function App() {
@@ -42,7 +45,21 @@ function App() {
           className="absolute inset-0 z-10"
         >
           <Suspense fallback={null}>
-            <LandingPage scrollProgress={0} />
+            <ScrollControls pages={3} damping={0.2}>
+              {/* 3D background elements */}
+              <LandingPage scrollProgress={0} />
+              
+              {/* HTML content that scrolls */}
+              <Scroll html>
+                <div className="w-full">
+                  <LandingHero />
+                  <ProjectShowcase />
+                  <div className="w-full h-[100vh] bg-zinc-900 flex items-center justify-center">
+                    <h2 className="text-white font-serif italic text-4xl">More to come...</h2>
+                  </div>
+                </div>
+              </Scroll>
+            </ScrollControls>
           </Suspense>
         </Canvas>
       )}
