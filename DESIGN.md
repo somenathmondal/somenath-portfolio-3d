@@ -136,3 +136,93 @@ To deliver this high-fidelity experience smoothly across all devices, we strictl
 1.  **DPR Capping**: Capped at `Math.min(window.devicePixelRatio, 1.5)` inside R3F's Canvas to prevent GPU bottlenecks on high-resolution displays.
 2.  **Asset Prefetching**: Custom pre-loaders and suspension boundaries ensure all heavy 3D GLTF models, environment map textures, and custom fonts are cached before the loading screen fades.
 3.  **Draw Call Management**: Merged geometries, texture atlasing, and lightweight post-processing shaders maintain a smooth 60fps even on mobile systems.
+
+---
+
+## 6. Core System Architecture
+
+To ensure the portfolio scales across multiple aspect ratios (e.g. standard viewports, ultra-wide screens) and manages complex interactions gracefully, we implement a highly efficient **dual-layered rendering architecture**.
+
+### 🏗 Architecture Map
+
+```mermaid
+graph TD
+    %% Base Mounting
+    subgraph Core Entry
+        Vite[Vite Bundler / Dev Server] --> Main[main.tsx]
+        Main --> App[App.tsx]
+    end
+
+    %% State Management
+    subgraph State Layer
+        Store[Zustand: usePortfolio]
+        Store -.->|isLoading / theme| App
+        Store -.->|theme toggler| Hero[LandingHero.tsx]
+        Store -.->|dynamic theme| Show[ProjectShowcase.tsx]
+        Store -.->|clearColor & light presets| GL[LandingPage.tsx WebGL]
+    end
+
+    %% Telemetry Layer
+    subgraph Telemetry & Metrics
+        Vercel[Vercel Web Analytics]
+        PH[PostHog Client]
+        App -->|Traffic & Vitals| Vercel
+        Hero -->|Theme / Footer clicks| PH
+        Show -->|Playable Demo / Outbound clicks| PH
+    end
+
+    %% Canvas & Visual Layers
+    subgraph UI Viewport View
+        App -->|Canvas z-10| R3F[R3F Canvas]
+        App -->|Scroll html z-20| HTML[Drei Scroll Overlay]
+        
+        subgraph 3D WebGL Layer
+            R3F --> Controls[ScrollControls]
+            Controls --> GL
+            GL --> Physics[Spring Physics Engine]
+            GL --> Shaders[Liquid Glass Shaders]
+        end
+
+        subgraph Editorial HTML Layer
+            HTML --> Hero
+            HTML --> Show
+            Show --> FeedPanda[Feed Panda iframe]
+        end
+    end
+
+    classDef store fill:#5C2E2E,stroke:#FFFFFF,stroke-width:1px,color:#FFFFFF;
+    classDef WebGL fill:#7C3E3E,stroke:#FFFFFF,stroke-width:1px,color:#FFFFFF;
+    classDef HTML fill:#2D1616,stroke:#FFFFFF,stroke-width:1px,color:#FFFFFF;
+    classDef analytics fill:#222,stroke:#C5A07F,stroke-width:1px,color:#C5A07F;
+    
+    class Store store;
+    class R3F,GL,Controls,Physics,Shaders WebGL;
+    class HTML,Hero,Show,FeedPanda HTML;
+    class Vercel,PH analytics;
+```
+
+### 🧱 Architectural Layer Breakdown
+
+#### A. Host & Bundling Layer
+*   Bundled using **Vite** via custom `vite.config.frontend.ts` for rapid, module-split compiling and automatic deployment via **Vercel** integration pipelines.
+
+#### B. Global Reactive Store (Zustand)
+*   **Store**: `usePortfolio.tsx`
+*   Maintains simple, rapid global states (`theme: 'light' | 'dark'` and `isLoading`) preventing heavy prop-drilling.
+*   Theme changes instantly trigger class updates in Tailwind while concurrently re-evaluating Three.js ambient colors and clear colors in the WebGL scene.
+
+#### C. WebGL Canvas Layer (Three.js / React Three Fiber)
+*   An absolute `z-10` stretched background canvas rendering elastic 3D typography (**S** & **M** initials) backed by transmission physics, custom fragment/vertex glass shaders, and dynamic studio lighting.
+*   The Canvas explicitly limits DPR limits to `[1, 1.5]` to avoid fill-rate bottlenecks on Retina and Ultra-wide monitors.
+
+#### D. Editorial HTML Scroll Overlay (Drei Scroll HTML)
+*   Stretched boundaries (`width: 100%`) rendering high-impact typography and interactive project decks.
+*   Z-index elevations (`z-20 pointer-events-auto` on links/buttons, `z-10 pointer-events-none` on background overlays) prevent pointer events from being absorbed, preserving clickability.
+*   Dynamic inline showcases render games like *Feed Panda* cleanly within borderless iframes alongside visual `onError` image handlers for clean asset degradation.
+
+#### E. Telemetry & Analytics Fabric
+*   **Vercel Web Analytics**: Track core aggregates, layout speeds, and traffic locations.
+*   **PostHog Telemetry**: Tracks granular events (`theme_toggled`, `playable_demo_started`, `playable_demo_closed`, `explore_demo_clicked`, `social_link_clicked`) enabling perfect user flow funnels and session logs.
+
+> [!IMPORTANT]
+> **Developer Requirement**: Before executing any git push or deployment commit, always confirm with the user whether the architecture blueprint diagrams in `DESIGN.md` and `GEMINI.md` require updates.
