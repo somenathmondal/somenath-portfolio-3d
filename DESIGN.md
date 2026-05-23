@@ -223,6 +223,7 @@ graph TD
 #### E. Telemetry & Analytics Fabric
 *   **Vercel Web Analytics**: Track core aggregates, layout speeds, and traffic locations.
 *   **PostHog Telemetry**: Tracks granular events (`theme_toggled`, `playable_demo_started`, `playable_demo_closed`, `explore_demo_clicked`, `social_link_clicked`) enabling perfect user flow funnels and session logs.
+    *   **Live Dashboard**: [Somenath Portfolio PostHog Dashboard](https://us.posthog.com/project/437135/dashboard/1621147)
 
 > [!IMPORTANT]
 > **Developer Requirement**: Before executing any git push or deployment commit, always confirm with the user whether the architecture blueprint diagrams in `DESIGN.md` and `GEMINI.md` require updates.

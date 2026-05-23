@@ -26,6 +26,8 @@ The portfolio uses a high-performance **dual-layered rendering architecture** de
 
 ## 📊 Telemetry & Instrumented Event Hooks
 
+*   **Live Dashboard**: [Somenath Portfolio PostHog Dashboard](https://us.posthog.com/project/437135/dashboard/1621147)
+
 Key interactive nodes are instrumented with **PostHog Client telemetry**:
 
 *   `"theme_toggled"`: Captured when the Sun/Moon button is clicked. Sends `{ new_theme: 'light' | 'dark' }`.
