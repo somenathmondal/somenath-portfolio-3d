@@ -6,6 +6,7 @@ import LandingPage from "./components/LandingPage";
 import LoadingScreen from "./components/LoadingScreen";
 import ProjectShowcase from "./components/ProjectShowcase";
 import LandingHero from "./components/LandingHero";
+import { Analytics } from "@vercel/analytics/react";
 import "@fontsource/inter";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
 
   return (
     <div className="w-full h-full relative" style={{ background: theme === 'light' ? '#e5e5e5' : '#3B1E1E' }}>
+      <Analytics />
       {showCanvas && (
         <Canvas
           dpr={[1, 1.5]} // Capping DPR at 1.5 for better performance

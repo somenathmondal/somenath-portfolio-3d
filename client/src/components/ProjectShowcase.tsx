@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { projects } from "../data/projects";
 import { usePortfolio } from "../lib/stores/usePortfolio";
+import posthog from "posthog-js";
 
 export default function ProjectShowcase() {
   const { theme } = usePortfolio();
@@ -53,7 +54,10 @@ export default function ProjectShowcase() {
                     }`}>
                       <span className="text-[8px] font-mono tracking-widest uppercase">PLAYING LIVE DEMO</span>
                       <button 
-                        onClick={() => setActiveEmbedId(null)}
+                        onClick={() => {
+                          setActiveEmbedId(null);
+                          posthog.capture("playable_demo_closed", { project_id: project.id });
+                        }}
                         className={`text-[8px] font-mono tracking-widest uppercase border px-2 py-0.5 rounded transition-all duration-300 ${
                           theme === 'light' 
                             ? 'border-zinc-300 hover:border-black text-zinc-600 hover:text-black' 
@@ -93,7 +97,10 @@ export default function ProjectShowcase() {
                       </span>
                       {project.id === 'feed-panda' && (
                         <button 
-                          onClick={() => setActiveEmbedId(project.id)}
+                          onClick={() => {
+                            setActiveEmbedId(project.id);
+                            posthog.capture("playable_demo_started", { project_id: project.id });
+                          }}
                           className={`mt-4 px-4 py-2 border rounded-full text-[9px] tracking-widest font-mono uppercase transition-all duration-300 pointer-events-auto hover:scale-105 active:scale-95 ${
                             theme === 'light' 
                               ? 'border-zinc-300 text-zinc-600 hover:text-black hover:border-black bg-white/80 hover:bg-white' 
@@ -162,6 +169,9 @@ export default function ProjectShowcase() {
                   href={project.link}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => {
+                    posthog.capture("explore_demo_clicked", { project_id: project.id, link: project.link });
+                  }}
                   className={`text-[10px] tracking-[0.3em] uppercase font-bold border-b w-fit pb-1 transition-all duration-300 ${
                     theme === 'light' 
                       ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 

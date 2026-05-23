@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sun, Moon, ChevronDown } from "lucide-react";
 import { usePortfolio } from "../lib/stores/usePortfolio";
+import posthog from "posthog-js";
 
 export default function LandingHero() {
   const { theme, toggleTheme } = usePortfolio();
@@ -39,7 +40,11 @@ export default function LandingHero() {
 
           {/* Theme Toggle Button */}
           <button 
-            onClick={toggleTheme}
+            onClick={() => {
+              toggleTheme();
+              const nextTheme = theme === 'light' ? 'dark' : 'light';
+              posthog.capture("theme_toggled", { new_theme: nextTheme });
+            }}
             className={`flex items-center justify-center p-2 rounded-full border ${
               theme === 'light' 
                 ? 'border-zinc-300 hover:border-black text-zinc-600 hover:text-black bg-white/50' 
@@ -169,6 +174,7 @@ export default function LandingHero() {
               href="https://www.linkedin.com/in/somenath-mondal-xr-tech/" 
               target="_blank" 
               rel="noopener noreferrer" 
+              onClick={() => posthog.capture("social_link_clicked", { platform: "linkedin" })}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 
@@ -181,6 +187,7 @@ export default function LandingHero() {
               href="https://github.com/somenathmondal" 
               target="_blank" 
               rel="noopener noreferrer" 
+              onClick={() => posthog.capture("social_link_clicked", { platform: "github" })}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 
@@ -193,6 +200,7 @@ export default function LandingHero() {
               href="https://www.youtube.com/@IITPodcastwithSomenath" 
               target="_blank" 
               rel="noopener noreferrer" 
+              onClick={() => posthog.capture("social_link_clicked", { platform: "youtube" })}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 
@@ -205,6 +213,7 @@ export default function LandingHero() {
               href="https://open.spotify.com/show/2OkRCNNTbwaAB2CElTDdYH?si=9_ikF-n-RBexQXMuwvxr9g" 
               target="_blank" 
               rel="noopener noreferrer" 
+              onClick={() => posthog.capture("social_link_clicked", { platform: "spotify" })}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 
