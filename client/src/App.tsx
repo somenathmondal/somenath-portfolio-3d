@@ -9,7 +9,7 @@ import LandingHero from "./components/LandingHero";
 import "@fontsource/inter";
 
 function App() {
-  const { isLoading, setLoading } = usePortfolio();
+  const { isLoading, setLoading, theme } = usePortfolio();
   const [showCanvas, setShowCanvas] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ function App() {
   }
 
   return (
-    <div className="w-full h-full relative" style={{ background: '#e5e5e5' }}>
+    <div className="w-full h-full relative" style={{ background: theme === 'light' ? '#e5e5e5' : '#3B1E1E' }}>
       {showCanvas && (
         <Canvas
           dpr={[1, 1.5]} // Capping DPR at 1.5 for better performance
@@ -50,12 +50,12 @@ function App() {
               <LandingPage scrollProgress={0} />
               
               {/* HTML content that scrolls */}
-              <Scroll html>
+              <Scroll html style={{ width: '100%', left: 0, right: 0 }}>
                 <div className="w-full">
                   <LandingHero />
                   <ProjectShowcase />
-                  <div className="w-full h-[100vh] bg-zinc-900 flex items-center justify-center">
-                    <h2 className="text-white font-serif italic text-4xl">More to come...</h2>
+                  <div className={`w-full h-[100vh] flex items-center justify-center ${theme === 'light' ? 'bg-zinc-900' : 'bg-[#2D1616] border-t border-stone-800'}`}>
+                    <h2 className={`font-serif italic text-4xl ${theme === 'light' ? 'text-white' : 'text-stone-300'}`}>More to come...</h2>
                   </div>
                 </div>
               </Scroll>

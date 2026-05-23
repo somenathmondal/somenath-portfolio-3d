@@ -5,6 +5,7 @@ import { EffectComposer, Bloom, Noise } from "@react-three/postprocessing";
 import { Perf } from "r3f-perf";
 import * as THREE from "three";
 import { Pane } from "tweakpane";
+import { usePortfolio } from "../lib/stores/usePortfolio";
 
 interface LandingPageProps { scrollProgress: number; }
 
@@ -106,10 +107,11 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   const { viewport } = useThree();
   const scroll = useScroll();
   const isMobile = viewport.width < 7;
+  const { theme } = usePortfolio();
   
   const [params, setParams] = useState<DebugParams>({
-    letterSize: isMobile ? 1.0 : 1.5,
-    letterSpacing: isMobile ? 0.6 : 0.8, 
+    letterSize: isMobile ? 0.9 : 1.25,
+    letterSpacing: isMobile ? 0.55 : 0.7, 
     springVelocity: 0.04,
     influenceRadius: 2.0,
     damping: 0.90,
@@ -148,7 +150,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
 
   return (
     <>
-      <color attach="background" args={["#f0f0f0"]} />
+      <color attach="background" args={[theme === 'light' ? "#f0f0f0" : "#3B1E1E"]} />
       {params.showPerf && <Perf position="bottom-right" minimal={isMobile} />}
       
       <Environment preset="studio" />
