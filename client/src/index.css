@@ -169,4 +169,11 @@
     left: 0;
     z-index: 1;
   }
+
+  /* Globally hide native cursor on devices with mouse inputs to let the iridescent soap bubble shine */
+  @media (pointer: fine) {
+    body, a, button, [role="button"], input, textarea, select, iframe {
+      cursor: none !important;
+    }
+  }
 }
