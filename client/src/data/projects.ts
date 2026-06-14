@@ -23,5 +23,12 @@ export const projects: Project[] = [
     tech: ["React", "Three.js", "R3F", "Tailwind CSS"],
     link: "https://gf-sports.fr/",
     image: "/Jersey_Configurator.png",
+  },
+  {
+    id: "3d-kinematic-visualizer",
+    title: "3D Kinematic Music Visualizer",
+    description: "A real-time 3D audio-reactive experience featuring a radial kinematic spoke column and a 61-key piano. Synthesizes MIDI sequences in the browser with Tone.js, triggering custom physics-based ball drops, key depressions, and glowing particle spark VFX in Three.js.",
+    tech: ["Three.js", "Tone.js", "Vanilla JS", "Post-processing"],
+    link: "https://3d-kinematic-visualizer.vercel.app"
   }
 ];
