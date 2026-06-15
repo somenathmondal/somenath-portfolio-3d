@@ -31,5 +31,13 @@ export const projects: Project[] = [
     tech: ["Three.js", "Tone.js", "Vanilla JS", "Post-processing"],
     link: "https://3d-kinematic-visualizer.vercel.app",
     image: "/3D_Kinematic_Visualizer.png"
+  },
+  {
+    id: "messi-albiceleste",
+    title: "Messi & The Albiceleste",
+    description: "An interactive, editorial 3D visual journey celebrating Lionel Messi's iconic World Cup jerseys with Argentina. Built with WebGL, WebGL textures generated using Fabric.js dynamic canvas pipelines, and smooth scroll-driven animations from 2006 to 2026.",
+    tech: ["Three.js", "Fabric.js", "Vanilla JS", "WebGL"],
+    link: "https://messi-in-world-cups-3d.vercel.app/",
+    image: "/Messi_Albiceleste.png"
   }
 ];
