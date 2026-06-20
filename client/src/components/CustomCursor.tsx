@@ -67,7 +67,8 @@ export default function CustomCursor() {
         
         // Smoothly scale down radius as user scrolls down
         const scrollOffset = (window as any).scrollOffset || 0;
-        const scrollFactor = Math.min(scrollOffset * 3.3, 1.0); // complete transition in first 30% scroll
+        const scrollPages = (window as any).scrollPages || 3;
+        const scrollFactor = Math.min(scrollOffset * scrollPages, 1.0); // complete transition in first page scroll
         
         // Target radius: goes from full cursorRadius (120px) to normal cursor radius (8px)
         const targetRadius = cursorRadius - (cursorRadius - 8) * scrollFactor;

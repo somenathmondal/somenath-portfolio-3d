@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ScrollControls, Scroll } from "@react-three/drei";
 import { usePortfolio } from "./lib/stores/usePortfolio";
@@ -13,9 +13,19 @@ import "@fontsource/inter";
 function App() {
   const { theme } = usePortfolio();
   const [loadingDone, setLoadingDone] = useState(false);
+  const [pagesCount, setPagesCount] = useState(5.2);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setPagesCount(window.innerWidth < 768 ? 5.8 : 5.2);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div className="w-full h-full relative" style={{ background: theme === 'light' ? '#FAF6F0' : '#3B1E1E' }}>
+    <div className="w-full h-full relative" style={{ background: theme === 'light' ? '#FAF6F0' : '#09090b' }}>
       <Analytics />
 
       {/* Canvas is ALWAYS mounted so it initializes & renders its first frame
@@ -36,7 +46,7 @@ function App() {
         className="absolute inset-0 z-10"
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={3} damping={0.2}>
+          <ScrollControls pages={pagesCount} damping={0.2}>
             {/* 3D background elements */}
             <LandingPage scrollProgress={0} />
             
@@ -45,7 +55,7 @@ function App() {
               <div className="w-full">
                 <LandingHero />
                 <ProjectShowcase />
-                <div className={`w-full h-[100vh] flex items-center justify-center ${theme === 'light' ? 'bg-zinc-900' : 'bg-[#2D1616] border-t border-stone-800'}`}>
+                <div className={`w-full h-[100vh] flex items-center justify-center ${theme === 'light' ? 'bg-zinc-900' : 'bg-[#121214] border-t border-zinc-900'}`}>
                   <h2 className={`font-serif italic text-4xl ${theme === 'light' ? 'text-white' : 'text-stone-300'}`}>More to come...</h2>
                 </div>
               </div>

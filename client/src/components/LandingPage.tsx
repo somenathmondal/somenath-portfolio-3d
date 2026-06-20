@@ -149,6 +149,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   useFrame(() => {
     setCurrentScroll(scroll.offset);
     (window as any).scrollOffset = scroll.offset;
+    (window as any).scrollPages = scroll.pages;
   });
 
   useEffect(() => {
@@ -175,33 +176,28 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
     return () => pane.dispose();
   }, []);
 
+  const exitProgress = Math.min(currentScroll * scroll.pages, 1.0);
+
   return (
     <>
-      <color attach="background" args={[theme === 'light' ? "#FAF6F0" : "#3B1E1E"]} />
+      <color attach="background" args={[theme === 'light' ? "#FAF6F0" : "#09090b"]} />
       {params.showPerf && <Perf position="bottom-right" minimal={isMobile} />}
       
       <Environment preset="studio" />
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={theme === "dark" ? 0.2 : 0.4} />
       <spotLight 
         position={[15, 15, 10]} 
         angle={0.25} 
         penumbra={1} 
-        intensity={1.5} 
-        color={theme === "dark" ? "#ff7f50" : "#ffffff"} // Warm sunset light in dark mode, white in light mode
+        intensity={theme === "dark" ? 2.5 : 1.5} 
+        color={theme === "dark" ? "#00f0ff" : "#ffffff"} // Cyan in dark mode, white in light mode
         castShadow 
       />
-      <pointLight position={[-10, -10, -10]} color={theme === "dark" ? "#ff4500" : "#ffffff"} intensity={0.5} />
-
-      {theme === "dark" && (
-        <Sky
-          distance={450000}
-          sunPosition={sunPosition}
-          turbidity={skyParams.turbidity}
-          rayleigh={skyParams.rayleigh}
-          mieCoefficient={skyParams.mieCoefficient}
-          mieDirectionalG={skyParams.mieDirectionalG}
-        />
-      )}
+      <pointLight 
+        position={[-10, -10, -10]} 
+        color={theme === "dark" ? "#ff007f" : "#ffffff"} // Magenta in dark mode, white in light mode
+        intensity={theme === "dark" ? 1.5 : 0.5} 
+      />
 
       {!isMobile && (
         <EffectComposer>
@@ -218,14 +214,14 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
 
       {/* <WavyGrass scrollOffset={currentScroll} /> */}
 
-      <group position={[0, (isMobile ? 0 : 0.1) + currentScroll * 3, -currentScroll * 4]}>
+      <group position={[0, (isMobile ? 0 : 0.1) + exitProgress * 3, -exitProgress * 4]}>
         <InteractiveLetter 
           char="S" 
           targetPosition={isMobile ? [0, params.letterSpacing / 2, 0] : [-params.letterSpacing, 0, 0]} 
           color="#9edbb7" 
           font="/fonts/font.json" 
           params={params}
-          scrollOffset={currentScroll}
+          scrollOffset={exitProgress}
         />
         <InteractiveLetter 
           char="M" 
@@ -233,12 +229,12 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
           color="#b0c4de" 
           font="/fonts/font.json" 
           params={params}
-          scrollOffset={currentScroll}
+          scrollOffset={exitProgress}
         />
         
         <ContactShadows
           position={[0, isMobile ? -2.0 : -1.5, 0]}
-          opacity={0.4 * (1 - currentScroll)} scale={isMobile ? 8 : 15} blur={2} far={4.5}
+          opacity={0.4 * (1 - exitProgress)} scale={isMobile ? 8 : 15} blur={2} far={4.5}
         />
       </group>
     </>

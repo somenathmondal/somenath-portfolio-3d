@@ -10,7 +10,7 @@ export default function ProjectShowcase() {
 
   return (
     <section className={`w-full min-h-screen py-24 px-8 md:px-12 transition-colors duration-500 pointer-events-auto ${
-      theme === 'light' ? 'bg-[#FAF6F0] text-black' : 'bg-[#3B1E1E] text-white border-t border-stone-800'
+      theme === 'light' ? 'bg-[#FAF6F0] text-black' : 'bg-[#09090b] text-white border-t border-zinc-900'
     }`}>
       <div className="max-w-7xl mx-auto">
         <header className="mb-20">
@@ -44,7 +44,7 @@ export default function ProjectShowcase() {
               className={`flex flex-col md:flex-row gap-12 md:gap-24 items-center ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`}
             >
               <div className={`w-full md:w-3/5 aspect-[16/10] overflow-hidden relative group transition-all duration-500 border ${
-                theme === 'light' ? 'bg-zinc-100 border-zinc-200' : 'bg-[#2D1616] border-stone-800'
+                theme === 'light' ? 'bg-zinc-100 border-zinc-200' : 'bg-[#121214] border-zinc-900'
               }`}>
                 {activeEmbedId === project.id ? (
                   <div className="absolute inset-0 w-full h-full z-20 pointer-events-auto flex flex-col">
@@ -84,7 +84,7 @@ export default function ProjectShowcase() {
                       {/* Playable Badge */}
                       {project.id === 'feed-panda' && (
                         <span className={`absolute top-4 left-4 text-[8px] tracking-[0.2em] font-mono uppercase px-2.5 py-0.5 border rounded-full transition-colors duration-500 ${
-                          theme === 'light' ? 'border-zinc-300 text-zinc-600 bg-white/90' : 'border-stone-850 text-orange-200 bg-[#3B1E1E]/90'
+                          theme === 'light' ? 'border-zinc-300 text-zinc-600 bg-white/90' : 'border-zinc-800 text-orange-200 bg-[#09090b]/90'
                         }`}>
                           Playable Demo
                         </span>
@@ -104,7 +104,7 @@ export default function ProjectShowcase() {
                           className={`mt-4 px-4 py-2 border rounded-full text-[9px] tracking-widest font-mono uppercase transition-all duration-300 pointer-events-auto hover:scale-105 active:scale-95 ${
                             theme === 'light' 
                               ? 'border-zinc-300 text-zinc-600 hover:text-black hover:border-black bg-white/80 hover:bg-white' 
-                              : 'border-stone-700 text-stone-300 hover:text-white hover:border-white bg-[#3B1E1E]/80 hover:bg-[#3B1E1E]'
+                              : 'border-zinc-800 text-stone-300 hover:text-white hover:border-white bg-[#09090b]/80 hover:bg-[#09090b]'
                           }`}
                         >
                           ▶ Play Live Demo
