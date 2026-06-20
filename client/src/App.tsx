@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ScrollControls, Scroll } from "@react-three/drei";
 import { usePortfolio } from "./lib/stores/usePortfolio";
@@ -13,16 +13,40 @@ import "@fontsource/inter";
 function App() {
   const { theme } = usePortfolio();
   const [loadingDone, setLoadingDone] = useState(false);
-  const [pagesCount, setPagesCount] = useState(5.2);
+  const [pagesCount, setPagesCount] = useState(5.0);
+  const htmlContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!htmlContainerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const height = entry.target.getBoundingClientRect().height;
+        const viewportHeight = window.innerHeight;
+        if (viewportHeight > 0) {
+          setPagesCount(height / viewportHeight);
+        }
+      }
+    });
+
+    observer.observe(htmlContainerRef.current);
+
     const handleResize = () => {
-      setPagesCount(window.innerWidth < 768 ? 5.8 : 5.2);
+      if (htmlContainerRef.current) {
+        const height = htmlContainerRef.current.getBoundingClientRect().height;
+        const viewportHeight = window.innerHeight;
+        if (viewportHeight > 0) {
+          setPagesCount(height / viewportHeight);
+        }
+      }
     };
-    handleResize();
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [loadingDone]);
 
   return (
     <div className="w-full h-full relative" style={{ background: theme === 'light' ? '#FAF6F0' : '#09090b' }}>
@@ -52,7 +76,7 @@ function App() {
             
             {/* HTML content that scrolls */}
             <Scroll html style={{ width: '100%', left: 0, right: 0 }}>
-              <div className="w-full">
+              <div ref={htmlContainerRef} className="w-full">
                 <LandingHero />
                 <ProjectShowcase />
                 <div className={`w-full h-[100vh] flex items-center justify-center ${theme === 'light' ? 'bg-zinc-900' : 'bg-[#121214] border-t border-zinc-900'}`}>
