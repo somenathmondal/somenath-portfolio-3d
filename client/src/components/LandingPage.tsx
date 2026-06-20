@@ -113,7 +113,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   const isMobile = viewport.width < 7;
   const { theme, setInfluenceRadius, setCursorRadius } = usePortfolio();
 
-  const sunPosition = useMemo(() => {
+  const sunPosition = useMemo<[number, number, number]>(() => {
     return theme === "dark" 
       ? [15, 0.015, -10]  // Low sun angle creates a gorgeous dark red/amber sunset matching RedSands background
       : [15, 0.45, -10];  // High sun angle creates a bright sunny day sky
@@ -148,6 +148,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
 
   useFrame(() => {
     setCurrentScroll(scroll.offset);
+    (window as any).scrollOffset = scroll.offset;
   });
 
   useEffect(() => {

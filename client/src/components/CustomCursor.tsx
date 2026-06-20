@@ -53,6 +53,7 @@ export default function CustomCursor() {
     window.addEventListener("mousemove", handleMouseMove);
 
     let animationId: number;
+    let currentRadius = cursorRadius; // Track the current lerped radius locally in the animation loop
     
     // Direct, high-performance requestAnimationFrame loop with organic physical behaviors
     const updatePosition = () => {
@@ -64,6 +65,62 @@ export default function CustomCursor() {
         currentPos.current.x += dx * 0.15;
         currentPos.current.y += dy * 0.15;
         
+        // Smoothly scale down radius as user scrolls down
+        const scrollOffset = (window as any).scrollOffset || 0;
+        const scrollFactor = Math.min(scrollOffset * 3.3, 1.0); // complete transition in first 30% scroll
+        
+        // Target radius: goes from full cursorRadius (120px) to normal cursor radius (8px)
+        const targetRadius = cursorRadius - (cursorRadius - 8) * scrollFactor;
+        
+        // Scale up by 25% on hover
+        const targetRadiusWithHover = isHoveringRef.current ? targetRadius * 1.25 : targetRadius;
+        
+        // Smoothly lerp the radius (handles both scroll-shrink and hover-expansion at 60fps)
+        currentRadius += (targetRadiusWithHover - currentRadius) * 0.15;
+        
+        const size = currentRadius * 2;
+        const marginOffset = -size / 2;
+
+        // Apply sizes and offsets directly to avoid React re-render overhead
+        cursorRef.current.style.width = `${size}px`;
+        cursorRef.current.style.height = `${size}px`;
+        cursorRef.current.style.marginLeft = `${marginOffset}px`;
+        cursorRef.current.style.marginTop = `${marginOffset}px`;
+
+        // Scale down the backdrop blur amount dynamically (from 5px to 0.5px)
+        const blurAmount = Math.max(5 - 4.5 * scrollFactor, 0.5);
+        
+        // Scale down the border thickness dynamically (from 1.2px to 0.8px)
+        const borderThickness = 1.2 - 0.4 * scrollFactor;
+        
+        cursorRef.current.style.backdropFilter = `blur(${blurAmount}px) saturate(145%) contrast(105%)`;
+        cursorRef.current.style.borderWidth = `${borderThickness}px`;
+
+        // Update shadows based on scroll
+        if (scrollFactor > 0.9) {
+          cursorRef.current.style.boxShadow = isHoveringRef.current 
+            ? "0 0 8px rgba(0, 240, 255, 0.5), inset 0 0 4px rgba(255, 255, 255, 0.8)"
+            : "0 0 4px rgba(0, 240, 255, 0.3), inset 0 0 2px rgba(255, 255, 255, 0.6)";
+        } else {
+          const shadowFactor = 1.0 - scrollFactor;
+          cursorRef.current.style.boxShadow = isHoveringRef.current
+            ? `
+              0 0 ${20 * shadowFactor}px rgba(0, 240, 255, ${0.35 * shadowFactor}),
+              0 0 ${35 * shadowFactor}px rgba(255, 0, 128, ${0.25 * shadowFactor}),
+              inset 0 0 ${20 * shadowFactor}px rgba(255, 255, 255, ${0.7 * shadowFactor}),
+              inset 4px 10px ${24 * shadowFactor}px rgba(0, 240, 255, ${0.45 * shadowFactor}),
+              inset -4px -10px ${24 * shadowFactor}px rgba(255, 0, 128, ${0.45 * shadowFactor}),
+              inset 5px -5px ${18 * shadowFactor}px rgba(255, 230, 100, ${0.35 * shadowFactor})
+            `
+            : `
+              0 0 ${15 * shadowFactor}px rgba(0, 240, 255, ${0.25 * shadowFactor}),
+              0 0 ${25 * shadowFactor}px rgba(255, 0, 128, ${0.15 * shadowFactor}),
+              inset 0 0 ${15 * shadowFactor}px rgba(255, 255, 255, ${0.55 * shadowFactor}),
+              inset 3px 8px ${20 * shadowFactor}px rgba(0, 240, 255, ${0.35 * shadowFactor}),
+              inset -3px -8px ${20 * shadowFactor}px rgba(255, 0, 128, ${0.35 * shadowFactor}),
+              inset 4px -4px ${15 * shadowFactor}px rgba(255, 230, 100, ${0.25 * shadowFactor})
+            `;
+        }
         // Calculate velocity-based stretch deformation
         const speed = Math.sqrt(dx * dx + dy * dy);
         let targetStretch = 0;
@@ -164,7 +221,7 @@ export default function CustomCursor() {
     zIndex: 99999, // Ensure it is above the Canvas and absolute overlay containers
     backdropFilter: "blur(5px) saturate(145%) contrast(105%)", // Replicates high refractive index lens with blur and contrast warp
     transform: `translate3d(${currentPos.current.x}px, ${currentPos.current.y}px, 0)`,
-    transition: "width 0.3s cubic-bezier(0.25, 1, 0.5, 1), height 0.3s cubic-bezier(0.25, 1, 0.5, 1), margin 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, border-color 0.3s ease",
+    transition: "box-shadow 0.3s ease, border-color 0.3s ease",
     
     // Bright iridescent glass bubble edges
     border: theme === "dark" 

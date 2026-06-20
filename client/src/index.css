@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -175,5 +177,20 @@
     body, a, button, [role="button"], input, textarea, select, iframe {
       cursor: none !important;
     }
+  }
+
+  @keyframes heartbeat {
+    0% { transform: scale(1); }
+    14% { transform: scale(1.15); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.15); }
+    70% { transform: scale(1); }
+    100% { transform: scale(1); }
+  }
+
+  .animate-heartbeat {
+    display: inline-block;
+    animation: heartbeat 1.8s infinite ease-in-out;
+    transform-origin: center;
   }
 }
