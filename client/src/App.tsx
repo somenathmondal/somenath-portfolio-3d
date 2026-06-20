@@ -15,7 +15,7 @@ function App() {
   const [loadingDone, setLoadingDone] = useState(false);
 
   return (
-    <div className="w-full h-full relative" style={{ background: theme === 'light' ? '#e5e5e5' : '#3B1E1E' }}>
+    <div className="w-full h-full relative" style={{ background: theme === 'light' ? '#FAF6F0' : '#3B1E1E' }}>
       <Analytics />
 
       {/* Canvas is ALWAYS mounted so it initializes & renders its first frame

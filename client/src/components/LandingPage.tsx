@@ -177,7 +177,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
 
   return (
     <>
-      <color attach="background" args={[theme === 'light' ? "#f0f0f0" : "#3B1E1E"]} />
+      <color attach="background" args={[theme === 'light' ? "#FAF6F0" : "#3B1E1E"]} />
       {params.showPerf && <Perf position="bottom-right" minimal={isMobile} />}
       
       <Environment preset="studio" />
@@ -192,14 +192,16 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
       />
       <pointLight position={[-10, -10, -10]} color={theme === "dark" ? "#ff4500" : "#ffffff"} intensity={0.5} />
 
-      <Sky
-        distance={450000}
-        sunPosition={sunPosition}
-        turbidity={skyParams.turbidity}
-        rayleigh={skyParams.rayleigh}
-        mieCoefficient={skyParams.mieCoefficient}
-        mieDirectionalG={skyParams.mieDirectionalG}
-      />
+      {theme === "dark" && (
+        <Sky
+          distance={450000}
+          sunPosition={sunPosition}
+          turbidity={skyParams.turbidity}
+          rayleigh={skyParams.rayleigh}
+          mieCoefficient={skyParams.mieCoefficient}
+          mieDirectionalG={skyParams.mieDirectionalG}
+        />
+      )}
 
       {!isMobile && (
         <EffectComposer>

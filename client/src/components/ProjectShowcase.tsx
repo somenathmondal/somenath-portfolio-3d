@@ -10,7 +10,7 @@ export default function ProjectShowcase() {
 
   return (
     <section className={`w-full min-h-screen py-24 px-8 md:px-12 transition-colors duration-500 pointer-events-auto ${
-      theme === 'light' ? 'bg-white text-black' : 'bg-[#3B1E1E] text-white border-t border-stone-800'
+      theme === 'light' ? 'bg-[#FAF6F0] text-black' : 'bg-[#3B1E1E] text-white border-t border-stone-800'
     }`}>
       <div className="max-w-7xl mx-auto">
         <header className="mb-20">
