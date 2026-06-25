@@ -19,6 +19,8 @@ interface DebugParams {
   damping: number;
   pushForce: number;
   showPerf: boolean;
+  groupX: number;
+  groupY: number;
 }
 
 function InteractiveLetter({ char, targetPosition, color, font, params, scrollOffset }: { 
@@ -133,7 +135,9 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
     cursorRadius: 120, // Decoupled default in pixels (240px diameter)
     damping: 0.90,
     pushForce: 0.1,
-    showPerf: false
+    showPerf: false,
+    groupX: -0.10,
+    groupY: isMobile ? 0.0 : -0.10
   });
 
   const [currentScroll, setCurrentScroll] = useState(0);
@@ -166,6 +170,10 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
     f2.addBinding(params, "cursorRadius", { min: 10, max: 400, step: 1, label: "Cursor Radius (px)" });
     f2.addBinding(params, "damping", { min: 0.8, max: 0.99, step: 0.01 });
     f2.addBinding(params, "pushForce", { min: 0, max: 0.2, step: 0.01 });
+    
+    const fGroup = pane.addFolder({ title: "3D Group Position" });
+    fGroup.addBinding(params, "groupX", { min: -2, max: 2, step: 0.01, label: "Group X" });
+    fGroup.addBinding(params, "groupY", { min: -2, max: 2, step: 0.01, label: "Group Y" });
     
     const f3 = pane.addFolder({ title: "Diagnostics" });
     f3.addBinding(params, "showPerf", { label: "Show Stats" });
@@ -214,7 +222,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
 
       {/* <WavyGrass scrollOffset={currentScroll} /> */}
 
-      <group position={[0, (isMobile ? 0 : 0.1) + exitProgress * 3, -exitProgress * 4]}>
+      <group position={[params.groupX, params.groupY + exitProgress * 3, -exitProgress * 4]}>
         <InteractiveLetter 
           char="S" 
           targetPosition={isMobile ? [0, params.letterSpacing / 2, 0] : [-params.letterSpacing, 0, 0]} 

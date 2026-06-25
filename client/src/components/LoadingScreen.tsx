@@ -1,78 +1,90 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
+import { usePortfolio } from "../lib/stores/usePortfolio";
 
 /**
  * LoadingScreen – an overlay that covers the app while the 3D canvas initializes.
  * 
- * After progress reaches 100%, it waits a brief moment for the WebGL context to
- * paint its first frame, then plays a radial-wipe dissolve reveal animation:
- * a circular mask expands from the center outward using CSS `clip-path` animated
- * via requestAnimationFrame for buttery-smooth 60fps performance.
+ * It traces the letters S and M (for Somenath Mondal) with a glowing stroke
+ * and fills them with animated, deep-ocean-teal water containing bubbles.
  * 
- * The component unmounts itself after the reveal completes via `onFinished`.
+ * Dynamic behavior:
+ * - When progress is active, overlay is solid and blocks inputs.
+ * - After 3D loads, the overlay background and text dissolve away.
+ * - The SVG loader remains fixed in the center at 50% opacity, allowing
+ *   pointer events to pass through so the user can interact with the 3D initials.
  */
 interface LoadingScreenProps {
   onFinished?: () => void;
 }
 
 export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
+  const { theme } = usePortfolio();
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<"loading" | "revealing" | "done">("loading");
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const backgroundOverlayRef = useRef<HTMLDivElement>(null);
 
-  // Fake progress bar — ticks up to 100
+  // Smooth visual progress loop
   useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, 35); // Faster to feel snappy
+    let animationFrameId: number;
+    let target = 0;
+    let current = 0;
 
-    return () => clearInterval(timer);
+    const totalDuration = 2200; // ms
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progressRatio = Math.min(elapsed / totalDuration, 1.0);
+      
+      const easeOutQuad = 1 - (1 - progressRatio) * (1 - progressRatio);
+      target = easeOutQuad * 100;
+
+      if (current < target) {
+        current = Math.min(current + 1.2, target);
+        setProgress(Math.round(current));
+      }
+
+      if (progressRatio < 1.0 || current < 100) {
+        animationFrameId = requestAnimationFrame(tick);
+      } else {
+        setProgress(100);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
   // When progress reaches 100, wait a beat for WebGL to paint, then begin reveal
   useEffect(() => {
     if (progress >= 100 && phase === "loading") {
-      // Short 300ms grace period for the Canvas to render its first frame underneath
       const timeout = setTimeout(() => {
         setPhase("revealing");
-      }, 300);
+      }, 500);
       return () => clearTimeout(timeout);
     }
   }, [progress, phase]);
 
-  // Radial wipe reveal animation using requestAnimationFrame + clip-path
+  // Radial wipe reveal animation applied ONLY to the background overlay
   useEffect(() => {
-    if (phase !== "revealing" || !overlayRef.current) return;
+    if (phase !== "revealing" || !backgroundOverlayRef.current) return;
 
-    const el = overlayRef.current;
+    const el = backgroundOverlayRef.current;
     const startTime = performance.now();
-    const duration = 1200; // 1.2 seconds for the full reveal sweep
+    const duration = 1200;
     let animId: number;
 
     const animate = (now: number) => {
       const elapsed = now - startTime;
       const t = Math.min(elapsed / duration, 1.0);
 
-      // Ease-in-out cubic for premium feel
       const eased = t < 0.5
         ? 4 * t * t * t
         : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-      // Expand a circle from center: 0% → 150% (overshoot to ensure full cover)
-      const radius = eased * 150;
-      el.style.clipPath = `circle(${radius}% at 50% 50%)`;
-      // Invert: we want the circle to *reveal* what's behind, so we clip the overlay
-      // Actually we want the overlay to shrink, so we invert:
-      // At t=0 the overlay covers everything (circle 150%), at t=1 it covers nothing (circle 0%)
       const invertedRadius = (1 - eased) * 150;
       el.style.clipPath = `circle(${invertedRadius}% at 50% 50%)`;
-      el.style.opacity = `${1 - eased * 0.3}`; // subtle fade as well
+      el.style.opacity = `${1 - eased * 0.3}`;
 
       if (t < 1) {
         animId = requestAnimationFrame(animate);
@@ -86,69 +98,217 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
     return () => cancelAnimationFrame(animId);
   }, [phase, onFinished]);
 
-  if (phase === "done") return null;
+  const isDark = theme === "dark";
 
   return (
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-[100000] flex items-center justify-center"
-      style={{
-        background: '#e5e5e5',
-        clipPath: 'circle(150% at 50% 50%)', // starts fully covering
-        willChange: 'clip-path, opacity',
-      }}
-    >
-      {/* Only show the loading UI while in "loading" phase */}
-      <AnimatePresence>
-        {phase === "loading" && (
-          <motion.div
-            className="text-center"
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeIn" }}
-          >
-            <motion.div
-              className="mb-12"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
-            >
-              <h1 className="text-6xl font-serif italic text-black mb-4">
-                Somenath Mondal.
-              </h1>
-              <motion.p
-                className="text-zinc-500 text-[10px] font-medium tracking-[0.3em] uppercase"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-              >
-                Portfolio Showcase
-              </motion.p>
-            </motion.div>
+    <div className="fixed inset-0 z-[100000] flex flex-col items-center justify-center overflow-hidden pointer-events-none">
+      {/* Styles for SVG Liquid Tracing & Bubble Animations */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --progress-num: ${progress};
+        }
+        
+        .letters-svg {
+          width: 648px;
+          height: 360px;
+          filter: drop-shadow(0 12px 40px rgba(0, 0, 0, ${isDark ? 0.5 : 0.08}));
+        }
 
-            <motion.div
-              className="w-64 h-px bg-zinc-300 mx-auto mb-6 overflow-hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-            >
-              <motion.div
-                className="h-full bg-black"
-                style={{ width: `${progress}%` }}
-                transition={{ duration: 0.05 }}
-              />
-            </motion.div>
+        .guide-outline {
+          stroke: ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(9, 9, 11, 0.06)'};
+          stroke-width: 1.5;
+          stroke-linecap: round;
+          fill: none;
+        }
 
-            <motion.div
-              className="text-zinc-400 font-light text-[10px] tracking-wider"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-            >
-              {progress}%
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        .trace-outline {
+          stroke: ${isDark ? '#75e6da' : '#0d98ba'};
+          stroke-dasharray: 600;
+          stroke-dashoffset: calc(600 - (600 * (var(--progress-num) / 100)));
+          stroke-width: 1.8;
+          stroke-linecap: round;
+          fill: none;
+          filter: url(#tracerGlow);
+          transition: stroke-dashoffset 0.08s linear;
+        }
+
+        .water-container {
+          transform: translateY(calc(166px - (142px * (var(--progress-num) / 100))));
+          transition: transform 0.08s linear;
+        }
+
+        .wave {
+          fill-opacity: 0.8;
+        }
+
+        .wave-front {
+          fill: url(#liquidGradFront);
+          animation: waveScrollFront 3.5s linear infinite;
+        }
+
+        .wave-back {
+          fill: url(#liquidGradBack);
+          opacity: 0.65;
+          animation: waveScrollBack 5.5s linear infinite;
+        }
+
+        @keyframes waveScrollFront {
+          0% { transform: translateX(0px); }
+          100% { transform: translateX(-180px); }
+        }
+
+        @keyframes waveScrollBack {
+          0% { transform: translateX(-240px); }
+          100% { transform: translateX(0px); }
+        }
+
+        .bubble {
+          fill: ${isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.45)'};
+          stroke: ${isDark ? 'rgba(117, 230, 218, 0.35)' : 'rgba(13, 152, 186, 0.4)'};
+          stroke-width: 0.5;
+          opacity: 0;
+        }
+
+        .bubble-left {
+          animation: floatUpWobbleLeft 3s infinite ease-in;
+        }
+
+        .bubble-right {
+          animation: floatUpWobbleRight 3.4s infinite ease-in;
+        }
+
+        @keyframes floatUpWobbleLeft {
+          0% {
+            transform: translate(0, 0) scale(0.7);
+            opacity: 0;
+          }
+          10% { opacity: 0.8; }
+          50% { transform: translate(-8px, -60px) scale(1.0); }
+          85% { opacity: 0.8; }
+          100% {
+            transform: translate(2px, -140px) scale(0.6);
+            opacity: 0;
+          }
+        }
+
+        @keyframes floatUpWobbleRight {
+          0% {
+            transform: translate(0, 0) scale(0.7);
+            opacity: 0;
+          }
+          10% { opacity: 0.8; }
+          50% { transform: translate(8px, -60px) scale(1.0); }
+          85% { opacity: 0.8; }
+          100% {
+            transform: translate(-2px, -140px) scale(0.6);
+            opacity: 0;
+          }
+        }
+      `}} />
+
+      {/* Layer 1: Background Solid Overlay (clips/radial-wipes away) */}
+      <div
+        ref={backgroundOverlayRef}
+        className="absolute inset-0 transition-opacity duration-500"
+        style={{
+          background: isDark ? '#3B1E1E' : '#FAF6F0',
+          clipPath: 'circle(150% at 50% 50%)',
+          willChange: 'clip-path, opacity',
+          pointerEvents: phase === "loading" ? "auto" : "none",
+        }}
+      />
+
+      {/* Layer 2: Interactive Content Elements */}
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full pointer-events-none">
+        
+        {/* Title & Subtitle */}
+        <div
+          className="text-center mb-6 transition-opacity duration-1000 ease-out"
+          style={{ opacity: phase === "loading" ? 1 : 0 }}
+        >
+          <h1 className={`text-5xl font-serif italic mb-2 font-light tracking-wide ${isDark ? 'text-white' : 'text-[#09090b]'}`}>
+            Somenath Mondal.
+          </h1>
+          <p className={`text-[9px] font-mono tracking-[0.4em] uppercase opacity-80 ${isDark ? 'text-[#D4AF37]' : 'text-zinc-500'}`}>
+            Creative Technologist & Spatial Dev
+          </p>
+        </div>
+
+        {/* SVG Letter Tracing */}
+        <div
+          className="relative mb-6 flex justify-center items-center transition-opacity duration-1000 ease-in-out"
+          style={{ opacity: phase === "loading" ? 1 : 0.5 }}
+        >
+          <svg viewBox="0 0 360 200" className="letters-svg" id="portfolioLoaderSymbol">
+            <defs>
+              <filter id="tracerGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3.5" result="blur1" />
+                <feGaussianBlur stdDeviation="1.5" result="blur2" />
+                <feMerge>
+                  <feMergeNode in="blur1" />
+                  <feMergeNode in="blur2" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              <linearGradient id="liquidGradFront" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={isDark ? "#75e6da" : "#189ab4"} />
+                <stop offset="40%" stopColor="#189ab4" />
+                <stop offset="100%" stopColor="#05445e" />
+              </linearGradient>
+
+              <linearGradient id="liquidGradBack" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={isDark ? "#0d98ba" : "#75e6da"} />
+                <stop offset="100%" stopColor="#052e42" />
+              </linearGradient>
+
+              <clipPath id="letters-clip">
+                <path d="M 150.32 125.00 Q 150.32 145.58 132.68 158.18 Q 117.00 169.38 95.58 169.38 Q 71.64 169.38 56.24 156.22 Q 40.00 142.22 40.00 118.56 L 58.34 118.56 Q 58.34 134.94 68.00 144.46 Q 77.66 153.84 93.76 153.84 Q 107.06 153.84 117.98 147.68 Q 131.00 140.12 131.00 127.94 Q 131.00 112.68 108.60 105.68 Q 87.74 99.94 67.16 93.92 Q 44.62 83.98 44.62 62.28 Q 44.62 42.40 59.88 30.78 Q 73.88 20.00 94.32 20.00 Q 116.02 20.00 130.16 31.76 Q 145.84 44.36 145.84 65.50 L 127.50 65.50 Q 127.50 51.50 118.54 43.38 Q 109.58 35.12 95.30 35.12 Q 83.26 35.12 74.02 41.00 Q 62.96 48.00 62.96 59.48 Q 62.96 73.90 85.50 80.48 Q 106.50 86.22 127.50 92.10 Q 150.32 102.18 150.32 125.00 Z" />
+                <path d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" />
+              </clipPath>
+            </defs>
+
+            {/* Wireframe Outline */}
+            <path d="M 150.32 125.00 Q 150.32 145.58 132.68 158.18 Q 117.00 169.38 95.58 169.38 Q 71.64 169.38 56.24 156.22 Q 40.00 142.22 40.00 118.56 L 58.34 118.56 Q 58.34 134.94 68.00 144.46 Q 77.66 153.84 93.76 153.84 Q 107.06 153.84 117.98 147.68 Q 131.00 140.12 131.00 127.94 Q 131.00 112.68 108.60 105.68 Q 87.74 99.94 67.16 93.92 Q 44.62 83.98 44.62 62.28 Q 44.62 42.40 59.88 30.78 Q 73.88 20.00 94.32 20.00 Q 116.02 20.00 130.16 31.76 Q 145.84 44.36 145.84 65.50 L 127.50 65.50 Q 127.50 51.50 118.54 43.38 Q 109.58 35.12 95.30 35.12 Q 83.26 35.12 74.02 41.00 Q 62.96 48.00 62.96 59.48 Q 62.96 73.90 85.50 80.48 Q 106.50 86.22 127.50 92.10 Q 150.32 102.18 150.32 125.00 Z" className="guide-outline" />
+            <path d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" className="guide-outline" />
+
+            {/* Glowing active outline */}
+            <path d="M 150.32 125.00 Q 150.32 145.58 132.68 158.18 Q 117.00 169.38 95.58 169.38 Q 71.64 169.38 56.24 156.22 Q 40.00 142.22 40.00 118.56 L 58.34 118.56 Q 58.34 134.94 68.00 144.46 Q 77.66 153.84 93.76 153.84 Q 107.06 153.84 117.98 147.68 Q 131.00 140.12 131.00 127.94 Q 131.00 112.68 108.60 105.68 Q 87.74 99.94 67.16 93.92 Q 44.62 83.98 44.62 62.28 Q 44.62 42.40 59.88 30.78 Q 73.88 20.00 94.32 20.00 Q 116.02 20.00 130.16 31.76 Q 145.84 44.36 145.84 65.50 L 127.50 65.50 Q 127.50 51.50 118.54 43.38 Q 109.58 35.12 95.30 35.12 Q 83.26 35.12 74.02 41.00 Q 62.96 48.00 62.96 59.48 Q 62.96 73.90 85.50 80.48 Q 106.50 86.22 127.50 92.10 Q 150.32 102.18 150.32 125.00 Z" className="trace-outline" />
+            <path d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" className="trace-outline" />
+
+            {/* Liquid Fill */}
+            <g clipPath="url(#letters-clip)">
+              <path d="M 150.32 125.00 Q 150.32 145.58 132.68 158.18 Q 117.00 169.38 95.58 169.38 Q 71.64 169.38 56.24 156.22 Q 40.00 142.22 40.00 118.56 L 58.34 118.56 Q 58.34 134.94 68.00 144.46 Q 77.66 153.84 93.76 153.84 Q 107.06 153.84 117.98 147.68 Q 131.00 140.12 131.00 127.94 Q 131.00 112.68 108.60 105.68 Q 87.74 99.94 67.16 93.92 Q 44.62 83.98 44.62 62.28 Q 44.62 42.40 59.88 30.78 Q 73.88 20.00 94.32 20.00 Q 116.02 20.00 130.16 31.76 Q 145.84 44.36 145.84 65.50 L 127.50 65.50 Q 127.50 51.50 118.54 43.38 Q 109.58 35.12 95.30 35.12 Q 83.26 35.12 74.02 41.00 Q 62.96 48.00 62.96 59.48 Q 62.96 73.90 85.50 80.48 Q 106.50 86.22 127.50 92.10 Q 150.32 102.18 150.32 125.00 Z" fill="rgba(255, 255, 255, 0.025)" />
+              <path d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" fill="rgba(255, 255, 255, 0.025)" />
+
+              <g className="water-container">
+                <path className="wave wave-back" d="M 0 10 Q 60 20 120 10 T 240 10 T 360 10 T 480 10 T 600 10 T 720 10 T 840 10 T 960 10 L 960 250 L 0 250 Z" />
+                <path className="wave wave-front" d="M 0 10 Q 45 18 90 10 T 180 10 T 270 10 T 360 10 T 450 10 T 540 10 T 630 10 T 720 10 L 720 250 L 0 250 Z" />
+              </g>
+
+              <g className="bubbles">
+                <circle className="bubble bubble-left" cx="65" cy="170" r="3.2" style={{ animationDelay: '0.2s', animationDuration: '2.5s' }} />
+                <circle className="bubble bubble-right" cx="95" cy="170" r="4.5" style={{ animationDelay: '0.8s', animationDuration: '3.2s' }} />
+                <circle className="bubble bubble-left" cx="125" cy="170" r="2.5" style={{ animationDelay: '1.5s', animationDuration: '2.8s' }} />
+                <circle className="bubble bubble-right" cx="145" cy="170" r="3.8" style={{ animationDelay: '0.4s', animationDuration: '3.6s' }} />
+                <circle className="bubble bubble-left" cx="205" cy="170" r="5.0" style={{ animationDelay: '1.1s', animationDuration: '3.0s' }} />
+                <circle className="bubble bubble-right" cx="235" cy="170" r="2.2" style={{ animationDelay: '1.9s', animationDuration: '2.6s' }} />
+                <circle className="bubble bubble-left" cx="265" cy="170" r="4.0" style={{ animationDelay: '2.3s', animationDuration: '3.3s' }} />
+                <circle className="bubble bubble-right" cx="295" cy="170" r="3.0" style={{ animationDelay: '0.6s', animationDuration: '2.9s' }} />
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        {/* Numerical Progress */}
+        <div
+          className={`font-mono text-[11px] tracking-[0.25em] transition-opacity duration-1000 ease-out ${isDark ? 'text-[#C5A07F]' : 'text-zinc-500'}`}
+          style={{ opacity: phase === "loading" ? 1 : 0 }}
+        >
+          {progress}%
+        </div>
+
+      </div>
     </div>
   );
 }
