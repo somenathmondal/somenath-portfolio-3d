@@ -19,10 +19,15 @@ interface LoadingScreenProps {
 
 export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
   const { theme, setLoading } = usePortfolio();
-  const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<"loading" | "revealing" | "done">("loading");
   const backgroundOverlayRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Refs for direct DOM manipulation to bypass React high-frequency re-renders
+  const traceOutlineRefs = useRef<SVGPathElement[]>([]);
+  const waterContainerRef = useRef<SVGGElement>(null);
+  const progressTextRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -39,7 +44,7 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
     }
   }, [phase, setLoading]);
 
-  // Smooth visual progress loop
+  // Smooth visual progress loop using direct DOM manipulation for buttery 60fps updates
   useEffect(() => {
     let animationFrameId: number;
     let target = 0;
@@ -57,29 +62,58 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
 
       if (current < target) {
         current = Math.min(current + 1.2, target);
-        setProgress(Math.round(current));
+        const rounded = Math.round(current);
+
+        // Update SVG trace outlines directly (stroke-dasharray is 600)
+        const offset = 600 - (600 * (rounded / 100));
+        traceOutlineRefs.current.forEach(path => {
+          if (path) {
+            path.style.strokeDashoffset = `${offset}`;
+          }
+        });
+
+        // Update water level translation directly (translates from 166px down to 24px)
+        const translateY = 166 - (142 * (rounded / 100));
+        if (waterContainerRef.current) {
+          waterContainerRef.current.style.transform = `translateY(${translateY}px)`;
+        }
+
+        // Update progress text content directly
+        if (progressTextRef.current) {
+          progressTextRef.current.textContent = `${rounded}%`;
+        }
       }
 
       if (progressRatio < 1.0 || current < 100) {
         animationFrameId = requestAnimationFrame(tick);
       } else {
-        setProgress(100);
+        // Enforce absolute final values on completion
+        traceOutlineRefs.current.forEach(path => {
+          if (path) path.style.strokeDashoffset = "0";
+        });
+        if (waterContainerRef.current) {
+          waterContainerRef.current.style.transform = "translateY(24px)";
+        }
+        if (progressTextRef.current) {
+          progressTextRef.current.textContent = "100%";
+        }
+
+        // Wait 500ms beat for WebGL paint, then begin reveal phase
+        timeoutRef.current = setTimeout(() => {
+          setPhase("revealing");
+        }, 500);
       }
     };
 
     animationFrameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animationFrameId);
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
-
-  // When progress reaches 100, wait a beat for WebGL to paint, then begin reveal
-  useEffect(() => {
-    if (progress >= 100 && phase === "loading") {
-      const timeout = setTimeout(() => {
-        setPhase("revealing");
-      }, 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [progress, phase]);
 
   // Radial wipe reveal animation applied ONLY to the background overlay
   useEffect(() => {
@@ -120,10 +154,6 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
     <div className="fixed inset-0 z-[100000] flex flex-col items-center justify-center overflow-hidden pointer-events-none">
       {/* Styles for SVG Liquid Tracing & Bubble Animations */}
       <style dangerouslySetInnerHTML={{ __html: `
-        :root {
-          --progress-num: ${progress};
-        }
-        
         .letters-svg {
           width: 648px;
           height: 360px;
@@ -148,17 +178,15 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
         .trace-outline {
           stroke: ${isDark ? '#75e6da' : '#0d98ba'};
           stroke-dasharray: 600;
-          stroke-dashoffset: calc(600 - (600 * (var(--progress-num) / 100)));
+          stroke-dashoffset: 600;
           stroke-width: 1.8;
           stroke-linecap: round;
           fill: none;
           filter: url(#tracerGlow);
-          transition: stroke-dashoffset 0.08s linear;
         }
 
         .water-container {
-          transform: translateY(calc(166px - (142px * (var(--progress-num) / 100))));
-          transition: transform 0.08s linear;
+          transform: translateY(166px);
         }
 
         .wave {
@@ -297,15 +325,15 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
             <path d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" className="guide-outline" />
 
             {/* Glowing active outline */}
-            <path d="M 150.32 125.00 Q 150.32 145.58 132.68 158.18 Q 117.00 169.38 95.58 169.38 Q 71.64 169.38 56.24 156.22 Q 40.00 142.22 40.00 118.56 L 58.34 118.56 Q 58.34 134.94 68.00 144.46 Q 77.66 153.84 93.76 153.84 Q 107.06 153.84 117.98 147.68 Q 131.00 140.12 131.00 127.94 Q 131.00 112.68 108.60 105.68 Q 87.74 99.94 67.16 93.92 Q 44.62 83.98 44.62 62.28 Q 44.62 42.40 59.88 30.78 Q 73.88 20.00 94.32 20.00 Q 116.02 20.00 130.16 31.76 Q 145.84 44.36 145.84 65.50 L 127.50 65.50 Q 127.50 51.50 118.54 43.38 Q 109.58 35.12 95.30 35.12 Q 83.26 35.12 74.02 41.00 Q 62.96 48.00 62.96 59.48 Q 62.96 73.90 85.50 80.48 Q 106.50 86.22 127.50 92.10 Q 150.32 102.18 150.32 125.00 Z" className="trace-outline" />
-            <path d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" className="trace-outline" />
+            <path ref={el => { if (el) traceOutlineRefs.current[0] = el }} d="M 150.32 125.00 Q 150.32 145.58 132.68 158.18 Q 117.00 169.38 95.58 169.38 Q 71.64 169.38 56.24 156.22 Q 40.00 142.22 40.00 118.56 L 58.34 118.56 Q 58.34 134.94 68.00 144.46 Q 77.66 153.84 93.76 153.84 Q 107.06 153.84 117.98 147.68 Q 131.00 140.12 131.00 127.94 Q 131.00 112.68 108.60 105.68 Q 87.74 99.94 67.16 93.92 Q 44.62 83.98 44.62 62.28 Q 44.62 42.40 59.88 30.78 Q 73.88 20.00 94.32 20.00 Q 116.02 20.00 130.16 31.76 Q 145.84 44.36 145.84 65.50 L 127.50 65.50 Q 127.50 51.50 118.54 43.38 Q 109.58 35.12 95.30 35.12 Q 83.26 35.12 74.02 41.00 Q 62.96 48.00 62.96 59.48 Q 62.96 73.90 85.50 80.48 Q 106.50 86.22 127.50 92.10 Q 150.32 102.18 150.32 125.00 Z" className="trace-outline" />
+            <path ref={el => { if (el) traceOutlineRefs.current[1] = el }} d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" className="trace-outline" />
 
             {/* Liquid Fill */}
             <g clipPath="url(#letters-clip)">
               <path d="M 150.32 125.00 Q 150.32 145.58 132.68 158.18 Q 117.00 169.38 95.58 169.38 Q 71.64 169.38 56.24 156.22 Q 40.00 142.22 40.00 118.56 L 58.34 118.56 Q 58.34 134.94 68.00 144.46 Q 77.66 153.84 93.76 153.84 Q 107.06 153.84 117.98 147.68 Q 131.00 140.12 131.00 127.94 Q 131.00 112.68 108.60 105.68 Q 87.74 99.94 67.16 93.92 Q 44.62 83.98 44.62 62.28 Q 44.62 42.40 59.88 30.78 Q 73.88 20.00 94.32 20.00 Q 116.02 20.00 130.16 31.76 Q 145.84 44.36 145.84 65.50 L 127.50 65.50 Q 127.50 51.50 118.54 43.38 Q 109.58 35.12 95.30 35.12 Q 83.26 35.12 74.02 41.00 Q 62.96 48.00 62.96 59.48 Q 62.96 73.90 85.50 80.48 Q 106.50 86.22 127.50 92.10 Q 150.32 102.18 150.32 125.00 Z" fill="rgba(255, 255, 255, 0.025)" />
               <path d="M 313.56 165.74 L 294.66 165.74 L 294.66 44.08 L 255.18 165.74 L 236.70 165.74 L 197.92 44.50 L 197.92 165.74 L 180.00 165.74 L 180.00 23.92 L 208.00 23.92 L 246.08 143.34 L 285.98 23.92 L 313.56 23.92 L 313.56 165.74 Z" fill="rgba(255, 255, 255, 0.025)" />
 
-              <g className="water-container">
+              <g ref={waterContainerRef} className="water-container">
                 <path className="wave wave-back" d="M 0 10 Q 60 20 120 10 T 240 10 T 360 10 T 480 10 T 600 10 T 720 10 T 840 10 T 960 10 L 960 250 L 0 250 Z" />
                 <path className="wave wave-front" d="M 0 10 Q 45 18 90 10 T 180 10 T 270 10 T 360 10 T 450 10 T 540 10 T 630 10 T 720 10 L 720 250 L 0 250 Z" />
               </g>
@@ -326,10 +354,11 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
 
         {/* Numerical Progress */}
         <div
+          ref={progressTextRef}
           className={`font-mono text-[11px] tracking-[0.25em] transition-opacity duration-1000 ease-out ${isDark ? 'text-[#C5A07F]' : 'text-zinc-500'}`}
           style={{ opacity: phase === "loading" ? 1 : 0 }}
         >
-          {progress}%
+          0%
         </div>
 
       </div>
