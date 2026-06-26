@@ -29,10 +29,22 @@ function InteractiveLetter({ char, targetPosition, color, font, params, scrollOf
   const groupRef = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   const isMobile = viewport.width < 7;
+  const { isLoading } = usePortfolio();
   const velocity = useMemo(() => new THREE.Vector3(), []);
-  const targetPosVec = useMemo(() => new THREE.Vector3(...targetPosition), []);
   const targetRotation = useMemo(() => new THREE.Euler(), []);
   const [hasMoved, setHasMoved] = useState(false);
+
+  const transitionStartRef = useRef<number | null>(null);
+  const transitionProgressRef = useRef(0);
+
+  useEffect(() => {
+    if (!isLoading && transitionStartRef.current === null) {
+      transitionStartRef.current = performance.now();
+    } else if (isLoading) {
+      transitionStartRef.current = null;
+      transitionProgressRef.current = 0;
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     const handleMove = () => {
@@ -50,8 +62,49 @@ function InteractiveLetter({ char, targetPosition, color, font, params, scrollOf
     const t = state.clock.elapsedTime;
     if (!groupRef.current) return;
 
-    // Apply scroll offset to Y position
-    const currentTargetPos = targetPosVec.clone();
+    // Calculate transition progress (1s duration after a 2s delay)
+    if (transitionStartRef.current !== null) {
+      const elapsedMs = performance.now() - transitionStartRef.current;
+      const delayMs = 2000; // 2 seconds delay
+      const durationMs = 1000; // 1 second duration
+      
+      if (elapsedMs < delayMs) {
+        transitionProgressRef.current = 0;
+      } else {
+        const activeElapsed = elapsedMs - delayMs;
+        transitionProgressRef.current = Math.min(activeElapsed / durationMs, 1.0);
+      }
+    }
+
+    const tProgress = transitionProgressRef.current;
+    const ease = tProgress < 0.5 
+      ? 4 * tProgress * tProgress * tProgress 
+      : 1 - Math.pow(-2 * tProgress + 2, 3) / 2;
+
+    let targetX = targetPosition[0];
+    let targetY = targetPosition[1];
+    let targetZ = targetPosition[2];
+
+    if (isMobile) {
+      const spacing = params.letterSpacing;
+      if (char === "S") {
+        const startX = -spacing;
+        const startY = 0;
+        const endX = 0;
+        const endY = spacing / 2;
+        targetX = THREE.MathUtils.lerp(startX, endX, ease);
+        targetY = THREE.MathUtils.lerp(startY, endY, ease);
+      } else if (char === "M") {
+        const startX = spacing;
+        const startY = 0;
+        const endX = 0;
+        const endY = -spacing / 2;
+        targetX = THREE.MathUtils.lerp(startX, endX, ease);
+        targetY = THREE.MathUtils.lerp(startY, endY, ease);
+      }
+    }
+
+    const currentTargetPos = new THREE.Vector3(targetX, targetY, targetZ);
     currentTargetPos.y += scrollOffset * 10;
     currentTargetPos.z -= scrollOffset * 5;
 
@@ -240,10 +293,12 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
           scrollOffset={exitProgress}
         />
         
-        <ContactShadows
-          position={[0, isMobile ? -2.0 : -1.5, 0]}
-          opacity={0.4 * (1 - exitProgress)} scale={isMobile ? 8 : 15} blur={2} far={4.5}
-        />
+        {!isMobile && (
+          <ContactShadows
+            position={[0, -1.5, 0]}
+            opacity={0.4 * (1 - exitProgress)} scale={15} blur={2} far={4.5}
+          />
+        )}
       </group>
     </>
   );

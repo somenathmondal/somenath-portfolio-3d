@@ -17,12 +17,12 @@ export const projects: Project[] = [
     image: "/Feed_Panda_Demo.png",
   },
   {
-    id: "jersey-configurator",
-    title: "Jersey Configurator",
-    description: "An advanced 3D garment customization platform. Users can visualize various jersey designs, apply custom logos, and experiment with materials in a real-time 3D environment with high-fidelity textures.",
-    tech: ["React", "Three.js", "R3F", "Tailwind CSS"],
-    link: "https://gf-sports.fr/",
-    image: "/Jersey_Configurator.png",
+    id: "messi-albiceleste",
+    title: "Messi & The Albiceleste",
+    description: "An interactive, editorial 3D visual journey celebrating Lionel Messi's iconic World Cup jerseys with Argentina. Built with WebGL, WebGL textures generated using Fabric.js dynamic canvas pipelines, and smooth scroll-driven animations from 2006 to 2026.",
+    tech: ["Three.js", "Fabric.js", "Vanilla JS", "WebGL"],
+    link: "https://messi-in-world-cups-3d.vercel.app/",
+    image: "/Messi_Albiceleste.png"
   },
   {
     id: "3d-kinematic-visualizer",
@@ -33,11 +33,11 @@ export const projects: Project[] = [
     image: "/3D_Kinematic_Visualizer.png"
   },
   {
-    id: "messi-albiceleste",
-    title: "Messi & The Albiceleste",
-    description: "An interactive, editorial 3D visual journey celebrating Lionel Messi's iconic World Cup jerseys with Argentina. Built with WebGL, WebGL textures generated using Fabric.js dynamic canvas pipelines, and smooth scroll-driven animations from 2006 to 2026.",
-    tech: ["Three.js", "Fabric.js", "Vanilla JS", "WebGL"],
-    link: "https://messi-in-world-cups-3d.vercel.app/",
-    image: "/Messi_Albiceleste.png"
+    id: "jersey-configurator",
+    title: "Jersey Configurator",
+    description: "An advanced 3D garment customization platform. Users can visualize various jersey designs, apply custom logos, and experiment with materials in a real-time 3D environment with high-fidelity textures.",
+    tech: ["React", "Three.js", "R3F", "Tailwind CSS"],
+    link: "https://gf-sports.fr/",
+    image: "/Jersey_Configurator.png",
   }
 ];

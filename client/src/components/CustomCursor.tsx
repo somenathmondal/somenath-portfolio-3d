@@ -70,14 +70,44 @@ export default function CustomCursor() {
         const scrollPages = (window as any).scrollPages || 3;
         const scrollFactor = Math.min(scrollOffset * scrollPages, 1.0); // complete transition in first page scroll
         
-        // Target radius: goes from full cursorRadius (120px) to normal cursor radius (8px)
-        const targetRadius = cursorRadius - (cursorRadius - 8) * scrollFactor;
+        // Target radius: goes from full cursorRadius (120px) to normal cursor radius (16px, doubled from 8px)
+        const targetRadius = cursorRadius - (cursorRadius - 16) * scrollFactor;
         
-        // Scale up by 25% on hover
-        const targetRadiusWithHover = isHoveringRef.current ? targetRadius * 1.25 : targetRadius;
+        // Shrink to 16px on hover instead of expanding
+        const targetRadiusWithHover = isHoveringRef.current ? 16 : targetRadius;
+
+        // Calculate proximity to the central oval zone
+        const mouseX = mousePos.current.x;
+        const mouseY = mousePos.current.y;
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+
+        const centerX = winWidth / 2;
+        const centerY = winHeight / 2;
+
+        // Oval semi-axes representing the red oval boundary (45% of viewport width/height)
+        const rx = winWidth * 0.45;
+        const ry = winHeight * 0.45;
+
+        const dxNormalized = (mouseX - centerX) / rx;
+        const dyNormalized = (mouseY - centerY) / ry;
+        const ellipseVal = dxNormalized * dxNormalized + dyNormalized * dyNormalized;
+
+        // Inside the oval (ellipseVal <= 1.0), the factor is 1.0. 
+        // Outside the oval, it decreases smoothly to 0.0 at ellipseVal = 1.4
+        const maxEllipseVal = 1.4;
+        let ovalFactor = 1.0;
+        if (ellipseVal > 1.0) {
+          const t = Math.min(1.0, (ellipseVal - 1.0) / (maxEllipseVal - 1.0));
+          // Smooth sine ease-out transition for natural physical easing
+          ovalFactor = 1.0 - Math.sin(t * Math.PI / 2);
+        }
+
+        // Scale down towards 16px outside the central oval zone
+        const targetRadiusWithOval = 16 + (targetRadiusWithHover - 16) * ovalFactor;
         
-        // Smoothly lerp the radius (handles both scroll-shrink and hover-expansion at 60fps)
-        currentRadius += (targetRadiusWithHover - currentRadius) * 0.15;
+        // Smoothly lerp the radius (handles scroll-shrink, hover-shrink, and oval-shrink at 60fps)
+        currentRadius += (targetRadiusWithOval - currentRadius) * 0.15;
         
         const size = currentRadius * 2;
         const marginOffset = -size / 2;
@@ -88,38 +118,42 @@ export default function CustomCursor() {
         cursorRef.current.style.marginLeft = `${marginOffset}px`;
         cursorRef.current.style.marginTop = `${marginOffset}px`;
 
+        // Calculate size interpolation ratio relative to full size and small size (16px)
+        const radiusRatio = Math.max(0, Math.min(1, (currentRadius - 16) / (cursorRadius - 16)));
+
         // Scale down the backdrop blur amount dynamically (from 5px to 0.5px)
-        const blurAmount = Math.max(5 - 4.5 * scrollFactor, 0.5);
+        const blurAmount = 0.5 + 4.5 * radiusRatio;
         
         // Scale down the border thickness dynamically (from 1.2px to 0.8px)
-        const borderThickness = 1.2 - 0.4 * scrollFactor;
+        const borderThickness = 0.8 + 0.4 * radiusRatio;
         
         cursorRef.current.style.backdropFilter = `blur(${blurAmount}px) saturate(145%) contrast(105%)`;
         cursorRef.current.style.borderWidth = `${borderThickness}px`;
 
-        // Update shadows based on scroll
-        if (scrollFactor > 0.9) {
+        // Update shadows based on current interpolated radius size
+        if (currentRadius < 30) {
           cursorRef.current.style.boxShadow = isHoveringRef.current 
             ? "0 0 8px rgba(0, 240, 255, 0.5), inset 0 0 4px rgba(255, 255, 255, 0.8)"
             : "0 0 4px rgba(0, 240, 255, 0.3), inset 0 0 2px rgba(255, 255, 255, 0.6)";
         } else {
-          const shadowFactor = 1.0 - scrollFactor;
+          // Softer environmental shadows scaling proportionally with bubble size
+          const shadowScale = radiusRatio;
           cursorRef.current.style.boxShadow = isHoveringRef.current
             ? `
-              0 0 ${20 * shadowFactor}px rgba(0, 240, 255, ${0.35 * shadowFactor}),
-              0 0 ${35 * shadowFactor}px rgba(255, 0, 128, ${0.25 * shadowFactor}),
-              inset 0 0 ${20 * shadowFactor}px rgba(255, 255, 255, ${0.7 * shadowFactor}),
-              inset 4px 10px ${24 * shadowFactor}px rgba(0, 240, 255, ${0.45 * shadowFactor}),
-              inset -4px -10px ${24 * shadowFactor}px rgba(255, 0, 128, ${0.45 * shadowFactor}),
-              inset 5px -5px ${18 * shadowFactor}px rgba(255, 230, 100, ${0.35 * shadowFactor})
+              0 0 ${20 * shadowScale}px rgba(0, 240, 255, ${0.35 * shadowScale}),
+              0 0 ${35 * shadowScale}px rgba(255, 0, 128, ${0.25 * shadowScale}),
+              inset 0 0 ${20 * shadowScale}px rgba(255, 255, 255, ${0.7 * shadowScale}),
+              inset 4px 10px ${24 * shadowScale}px rgba(0, 240, 255, ${0.45 * shadowScale}),
+              inset -4px -10px ${24 * shadowScale}px rgba(255, 0, 128, ${0.45 * shadowScale}),
+              inset 5px -5px ${18 * shadowScale}px rgba(255, 230, 100, ${0.35 * shadowScale})
             `
             : `
-              0 0 ${15 * shadowFactor}px rgba(0, 240, 255, ${0.25 * shadowFactor}),
-              0 0 ${25 * shadowFactor}px rgba(255, 0, 128, ${0.15 * shadowFactor}),
-              inset 0 0 ${15 * shadowFactor}px rgba(255, 255, 255, ${0.55 * shadowFactor}),
-              inset 3px 8px ${20 * shadowFactor}px rgba(0, 240, 255, ${0.35 * shadowFactor}),
-              inset -3px -8px ${20 * shadowFactor}px rgba(255, 0, 128, ${0.35 * shadowFactor}),
-              inset 4px -4px ${15 * shadowFactor}px rgba(255, 230, 100, ${0.25 * shadowFactor})
+              0 0 ${15 * shadowScale}px rgba(0, 240, 255, ${0.25 * shadowScale}),
+              0 0 ${25 * shadowScale}px rgba(255, 0, 128, ${0.15 * shadowScale}),
+              inset 0 0 ${15 * shadowScale}px rgba(255, 255, 255, ${0.55 * shadowScale}),
+              inset 3px 8px ${20 * shadowScale}px rgba(0, 240, 255, ${0.35 * shadowScale}),
+              inset -3px -8px ${20 * shadowScale}px rgba(255, 0, 128, ${0.35 * shadowScale}),
+              inset 4px -4px ${15 * shadowScale}px rgba(255, 230, 100, ${0.25 * shadowScale})
             `;
         }
         // Calculate velocity-based stretch deformation
@@ -207,7 +241,7 @@ export default function CustomCursor() {
 
   // Use the decoupled cursorRadius (in pixels) directly from the Zustand store
   const baseSize = cursorRadius * 2; // Diameter in pixels
-  const size = isHovering ? baseSize * 1.15 : baseSize; // Expand slightly on hover for visual bounce
+  const size = isHovering ? 32 : baseSize; // Shrink to 16px radius (32px diameter) on hover
   const marginOffset = -size / 2;
 
   const sphereStyles: React.CSSProperties = {
@@ -220,14 +254,16 @@ export default function CustomCursor() {
     marginTop: `${marginOffset}px`,
     pointerEvents: "none",
     zIndex: 99999, // Ensure it is above the Canvas and absolute overlay containers
-    backdropFilter: "blur(5px) saturate(145%) contrast(105%)", // Replicates high refractive index lens with blur and contrast warp
+    backdropFilter: isHovering ? "blur(0.5px) saturate(145%) contrast(105%)" : "blur(5px) saturate(145%) contrast(105%)", // Softer blur when small
     transform: `translate3d(${currentPos.current.x}px, ${currentPos.current.y}px, 0)`,
-    transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+    transition: "box-shadow 0.3s ease, border-color 0.3s ease, width 0.3s ease, height 0.3s ease, margin-left 0.3s ease, margin-top 0.3s ease",
     
     // Bright iridescent glass bubble edges
-    border: theme === "dark" 
-      ? "1.2px solid rgba(255, 255, 255, 0.45)" 
-      : "1.2px solid rgba(255, 255, 255, 0.65)",
+    border: isHovering
+      ? "0.8px solid rgba(255, 255, 255, 0.45)"
+      : (theme === "dark" 
+        ? "1.2px solid rgba(255, 255, 255, 0.45)" 
+        : "1.2px solid rgba(255, 255, 255, 0.65)"),
 
     // Layered gradients representing light interference:
     // 1. Specular white glare top-left
@@ -250,14 +286,7 @@ export default function CustomCursor() {
 
     // Highly premium multi-layered iridescent glow shadows
     boxShadow: isHovering
-      ? `
-        0 0 20px rgba(0, 240, 255, 0.35),
-        0 0 35px rgba(255, 0, 128, 0.25),
-        inset 0 0 20px rgba(255, 255, 255, 0.7),
-        inset 4px 10px 24px rgba(0, 240, 255, 0.45),
-        inset -4px -10px 24px rgba(255, 0, 128, 0.45),
-        inset 5px -5px 18px rgba(255, 230, 100, 0.35)
-      `
+      ? "0 0 8px rgba(0, 240, 255, 0.5), inset 0 0 4px rgba(255, 255, 255, 0.8)"
       : `
         0 0 15px rgba(0, 240, 255, 0.25),
         0 0 25px rgba(255, 0, 128, 0.15),

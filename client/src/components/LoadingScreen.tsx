@@ -18,10 +18,26 @@ interface LoadingScreenProps {
 }
 
 export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
-  const { theme } = usePortfolio();
+  const { theme, setLoading } = usePortfolio();
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<"loading" | "revealing" | "done">("loading");
   const backgroundOverlayRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (phase === "revealing") {
+      setLoading(false);
+    }
+  }, [phase, setLoading]);
 
   // Smooth visual progress loop
   useEffect(() => {
@@ -112,6 +128,14 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
           width: 648px;
           height: 360px;
           filter: drop-shadow(0 12px 40px rgba(0, 0, 0, ${isDark ? 0.5 : 0.08}));
+        }
+
+        @media (max-width: 768px) {
+          .letters-svg {
+            width: 90vw;
+            height: auto;
+            max-width: 360px;
+          }
         }
 
         .guide-outline {
@@ -226,7 +250,7 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
           className="text-center mb-6 transition-opacity duration-1000 ease-out"
           style={{ opacity: phase === "loading" ? 1 : 0 }}
         >
-          <h1 className={`text-5xl font-serif italic mb-2 font-light tracking-wide ${isDark ? 'text-white' : 'text-[#09090b]'}`}>
+          <h1 className={`text-4xl md:text-5xl font-serif italic mb-2 font-light tracking-wide ${isDark ? 'text-white' : 'text-[#09090b]'}`}>
             Somenath Mondal.
           </h1>
           <p className={`text-[9px] font-mono tracking-[0.4em] uppercase opacity-80 ${isDark ? 'text-[#D4AF37]' : 'text-zinc-500'}`}>
@@ -237,7 +261,7 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
         {/* SVG Letter Tracing */}
         <div
           className="relative mb-6 flex justify-center items-center transition-opacity duration-1000 ease-in-out"
-          style={{ opacity: phase === "loading" ? 1 : 0.5 }}
+          style={{ opacity: phase === "loading" ? 1 : (isMobile ? 0 : 0.5) }}
         >
           <svg viewBox="0 0 360 200" className="letters-svg" id="portfolioLoaderSymbol">
             <defs>
