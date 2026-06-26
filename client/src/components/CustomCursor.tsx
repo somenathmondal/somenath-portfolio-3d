@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { usePortfolio } from "../lib/stores/usePortfolio";
+import posthog from "posthog-js";
 
 export default function CustomCursor() {
   const { theme, cursorRadius } = usePortfolio();
@@ -55,6 +56,11 @@ export default function CustomCursor() {
     let animationId: number;
     let currentRadius = cursorRadius; // Track the current lerped radius locally in the animation loop
     
+    // Bubble interaction duration trackers
+    let bubblePlayTime = 0;
+    let lastTime = performance.now();
+    let hasSentBubbleAnalytics = false;
+
     // Direct, high-performance requestAnimationFrame loop with organic physical behaviors
     const updatePosition = () => {
       if (cursorRef.current) {
@@ -165,6 +171,38 @@ export default function CustomCursor() {
           // Stretch is proportional to drag velocity, capped at 35% distortion
           targetStretch = Math.min(speed / 160, 0.35);
           targetAngle = Math.atan2(dy, dx);
+        }
+
+        // Track bubble active play duration on the landing page
+        const nowMs = performance.now();
+        const deltaSeconds = (nowMs - lastTime) / 1000;
+        lastTime = nowMs;
+
+        if (scrollOffset < 0.05) {
+          if (speed > 1.5) {
+            bubblePlayTime += deltaSeconds;
+          }
+          hasSentBubbleAnalytics = false;
+        } else {
+          if (bubblePlayTime > 0.5 && !hasSentBubbleAnalytics) {
+            const duration = Math.round(bubblePlayTime * 10) / 10;
+            
+            // PostHog
+            posthog.capture("bubble_played", { duration_seconds: duration });
+
+            // Google Analytics
+            if (typeof window !== "undefined" && (window as any).gtag) {
+              (window as any).gtag("event", "bubble_played", {
+                event_category: "Interaction",
+                event_label: "Bubble Cursor",
+                value: duration,
+                duration_seconds: duration
+              });
+            }
+            
+            bubblePlayTime = 0;
+            hasSentBubbleAnalytics = true;
+          }
         }
         
         // Interpolate stretch and angle parameters smoothly

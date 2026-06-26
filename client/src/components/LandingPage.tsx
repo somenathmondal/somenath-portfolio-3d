@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Float, MeshTransmissionMaterial, Environment, Text3D, Center, ContactShadows, useScroll, Sky } from "@react-three/drei";
+import posthog from "posthog-js";
 import { EffectComposer, Bloom, Noise, DepthOfField } from "@react-three/postprocessing";
 import { Perf } from "r3f-perf";
 import * as THREE from "three";
@@ -37,6 +38,10 @@ function InteractiveLetter({ char, targetPosition, color, font, params, scrollOf
   const transitionStartRef = useRef<number | null>(null);
   const transitionProgressRef = useRef(0);
 
+  // Interaction duration tracking refs
+  const interactionTimeRef = useRef(0);
+  const hasSentAnalyticsRef = useRef(false);
+
   useEffect(() => {
     if (!isLoading && transitionStartRef.current === null) {
       transitionStartRef.current = performance.now();
@@ -58,7 +63,7 @@ function InteractiveLetter({ char, targetPosition, color, font, params, scrollOf
     };
   }, [hasMoved]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
     if (!groupRef.current) return;
 
@@ -123,7 +128,39 @@ function InteractiveLetter({ char, targetPosition, color, font, params, scrollOf
         velocity.add(pushForceVec.multiplyScalar(power));
         targetRotation.x += (Math.random() - 0.5) * 0.2;
         targetRotation.y += (Math.random() - 0.5) * 0.2;
+
+        // Accumulate active interaction time in seconds when inside the hero section
+        if (scrollOffset < 0.05) {
+          interactionTimeRef.current += delta;
+        }
       }
+    }
+
+    // Report interaction duration as soon as the user scrolls away
+    if (scrollOffset >= 0.05) {
+      if (interactionTimeRef.current > 0.5 && !hasSentAnalyticsRef.current) {
+        const duration = Math.round(interactionTimeRef.current * 10) / 10;
+        
+        // PostHog
+        posthog.capture("letter_played", { letter: char, duration_seconds: duration });
+
+        // Google Analytics
+        if (typeof window !== "undefined" && (window as any).gtag) {
+          (window as any).gtag("event", "letter_played", {
+            event_category: "Interaction",
+            event_label: `3D Letter ${char}`,
+            value: duration,
+            letter: char,
+            duration_seconds: duration
+          });
+        }
+
+        interactionTimeRef.current = 0;
+        hasSentAnalyticsRef.current = true;
+      }
+    } else {
+      // Reset the analytics block if user scrolls back up
+      hasSentAnalyticsRef.current = false;
     }
 
     const springForce = new THREE.Vector3().subVectors(currentTargetPos, groupRef.current.position);
