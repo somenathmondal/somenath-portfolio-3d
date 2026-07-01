@@ -5,7 +5,7 @@ export interface Project {
   tech: string[];
   link: string;
   image?: string;
-  video?: string;          // Preview video loop
+  video?: string;          // Preview video loop (.mp4)
   backgroundColor: string; // Dynamic background accent theme color
 }
 
