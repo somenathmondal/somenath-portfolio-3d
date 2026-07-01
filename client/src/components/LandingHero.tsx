@@ -44,6 +44,11 @@ export default function LandingHero() {
               toggleTheme();
               const nextTheme = theme === 'light' ? 'dark' : 'light';
               posthog.capture("theme_toggled", { new_theme: nextTheme });
+              if (typeof window !== "undefined" && (window as any).gtag) {
+                (window as any).gtag("event", "theme_toggled", {
+                  new_theme: nextTheme
+                });
+              }
             }}
             className={`flex items-center justify-center p-2 rounded-full border ${
               theme === 'light' 
@@ -117,7 +122,12 @@ export default function LandingHero() {
               href="https://www.linkedin.com/in/somenath-mondal-xr-tech/" 
               target="_blank" 
               rel="noopener noreferrer" 
-              onClick={() => posthog.capture("social_link_clicked", { platform: "linkedin" })}
+              onClick={() => {
+                posthog.capture("social_link_clicked", { platform: "linkedin" });
+                if (typeof window !== "undefined" && (window as any).gtag) {
+                  (window as any).gtag("event", "social_link_clicked", { platform: "linkedin" });
+                }
+              }}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 
@@ -130,7 +140,12 @@ export default function LandingHero() {
               href="https://github.com/somenathmondal" 
               target="_blank" 
               rel="noopener noreferrer" 
-              onClick={() => posthog.capture("social_link_clicked", { platform: "github" })}
+              onClick={() => {
+                posthog.capture("social_link_clicked", { platform: "github" });
+                if (typeof window !== "undefined" && (window as any).gtag) {
+                  (window as any).gtag("event", "social_link_clicked", { platform: "github" });
+                }
+              }}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 
@@ -143,7 +158,12 @@ export default function LandingHero() {
               href="https://www.youtube.com/@IITPodcastwithSomenath" 
               target="_blank" 
               rel="noopener noreferrer" 
-              onClick={() => posthog.capture("social_link_clicked", { platform: "youtube" })}
+              onClick={() => {
+                posthog.capture("social_link_clicked", { platform: "youtube" });
+                if (typeof window !== "undefined" && (window as any).gtag) {
+                  (window as any).gtag("event", "social_link_clicked", { platform: "youtube" });
+                }
+              }}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 
@@ -156,7 +176,12 @@ export default function LandingHero() {
               href="https://open.spotify.com/show/2OkRCNNTbwaAB2CElTDdYH?si=9_ikF-n-RBexQXMuwvxr9g" 
               target="_blank" 
               rel="noopener noreferrer" 
-              onClick={() => posthog.capture("social_link_clicked", { platform: "spotify" })}
+              onClick={() => {
+                posthog.capture("social_link_clicked", { platform: "spotify" });
+                if (typeof window !== "undefined" && (window as any).gtag) {
+                  (window as any).gtag("event", "social_link_clicked", { platform: "spotify" });
+                }
+              }}
               className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
                 theme === 'light' 
                   ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500' 

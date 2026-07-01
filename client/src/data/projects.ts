@@ -39,5 +39,53 @@ export const projects: Project[] = [
     tech: ["React", "Three.js", "R3F", "Tailwind CSS"],
     link: "https://gf-sports.fr/",
     image: "/Jersey_Configurator.png",
+  },
+  {
+    id: "lounge-chair-configurator",
+    title: "3D Lounge Chair Configurator",
+    description: "A high-fidelity 3D product customization tool for furniture e-commerce. Enables customers to customize the materials, leather colors, and wood veneers of the classic Eames Lounge Chair, with full WebXR and AR preview features.",
+    tech: ["Three.js", "Vanilla JS", "WebGL", "AR/XR"],
+    link: "https://nexreality.io/projects/lounge-chair/index.html",
+    image: "/Lounge_Chair_Configurator.webp"
+  },
+  {
+    id: "watch-configurator",
+    title: "Christopher Ward 3D Customizer",
+    description: "An intricate WebGL product customizer for premium automatic watches. Showcases high-precision micro-modeling of dials, gear assemblies, hands, and strap configurations with real-time dynamic shadows and close-up zoom states.",
+    tech: ["Three.js", "WebGL", "GSAP", "3D Modeling"],
+    link: "https://nexreality.io/projects/watch/index.html",
+    image: "/Watch_Configurator.webp"
+  },
+  {
+    id: "scientific-exploration",
+    title: "NASA Ingenuity 3D Simulator",
+    description: "An educational physics-based 3D simulator demonstrating the flight dynamics and rotor mechanics of the NASA Mars Ingenuity Helicopter. Features flight path animation controls and interactive instrumentation overlays.",
+    tech: ["Three.js", "WebGL", "GSAP", "Animation"],
+    link: "https://nexreality.io/projects/scientific-exploration/index.html",
+    image: "/Scientific_Exploration.webp"
+  },
+  {
+    id: "medical-education",
+    title: "Interactive Anatomical Heart",
+    description: "A high-fidelity 3D medical visualization tool designed for surgical training and anatomy education. Features interactive cross-section cutting planes, real-time beat synchronization, and detailed vascular label tracking.",
+    tech: ["Three.js", "WebGL", "Custom Shaders", "3D Rendering"],
+    link: "https://nexreality.io/projects/medical-education/index.html",
+    image: "/Medical_Education.webp"
+  },
+  {
+    id: "product-discovery-ar",
+    title: "Samsung Galaxy Z Flip3 AR Showcase",
+    description: "An interactive 3D WebGL product explorer demonstrating the folding hinge mechanics, screen animations, and AR-ready camera placement of the Samsung Galaxy Z Flip3.",
+    tech: ["Three.js", "WebGL", "GSAP", "AR/XR"],
+    link: "https://nexreality.io/projects/product-discovery/index.html",
+    image: "/Product_Discovery_AR.webp"
+  },
+  {
+    id: "comfort-chair-configurator",
+    title: "Comfort Chair 3D Configurator",
+    description: "An interactive 3D chair configurator showcasing custom upholstery options, legs, and room settings for a personalized furniture shopping customer journey.",
+    tech: ["Three.js", "WebGL", "GSAP", "3D Configurator"],
+    link: "https://nexreality.io/projects/comfort-chair/index.html",
+    image: "/Comfort_Chair_Configurator.webp"
   }
 ];

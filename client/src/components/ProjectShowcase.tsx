@@ -11,6 +11,12 @@ export default function ProjectShowcase() {
   const handleCardClick = (project: any) => {
     if (activeEmbedId === project.id) return;
     posthog.capture("project_card_clicked", { project_id: project.id, link: project.link });
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "project_card_clicked", {
+        project_id: project.id,
+        link: project.link
+      });
+    }
     window.open(project.link, "_blank", "noopener,noreferrer");
   };
 
@@ -77,6 +83,11 @@ export default function ProjectShowcase() {
                           e.stopPropagation();
                           setActiveEmbedId(null);
                           posthog.capture("playable_demo_closed", { project_id: project.id });
+                          if (typeof window !== "undefined" && (window as any).gtag) {
+                            (window as any).gtag("event", "playable_demo_closed", {
+                              project_id: project.id
+                            });
+                          }
                         }}
                         className={`text-[8px] font-mono tracking-widest uppercase border px-2 py-0.5 rounded transition-all duration-300 ${
                           isLight 
@@ -125,6 +136,11 @@ export default function ProjectShowcase() {
                             e.stopPropagation();
                             setActiveEmbedId(project.id);
                             posthog.capture("playable_demo_started", { project_id: project.id });
+                            if (typeof window !== "undefined" && (window as any).gtag) {
+                              (window as any).gtag("event", "playable_demo_started", {
+                                project_id: project.id
+                              });
+                            }
                           }}
                           className={`px-4 py-2 border rounded-full text-[9px] tracking-widest font-mono uppercase transition-all duration-300 hover:scale-105 active:scale-95 ${
                             isLight 
