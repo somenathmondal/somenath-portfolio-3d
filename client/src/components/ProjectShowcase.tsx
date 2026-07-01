@@ -4,6 +4,32 @@ import { projects } from "../data/projects";
 import { usePortfolio } from "../lib/stores/usePortfolio";
 import posthog from "posthog-js";
 
+const lightBgTints: Record<string, string> = {
+  "feed-panda": "#FCFAF2",
+  "messi-albiceleste": "#F1FAF8",
+  "3d-kinematic-visualizer": "#FAF5FC",
+  "jersey-configurator": "#F2F7FA",
+  "lounge-chair-configurator": "#F6FAF2",
+  "watch-configurator": "#FAF2F4",
+  "scientific-exploration": "#FAF2F0",
+  "medical-education": "#FAF2F2",
+  "product-discovery-ar": "#F4FAF2",
+  "comfort-chair-configurator": "#FAF8F6",
+};
+
+const darkBgTints: Record<string, string> = {
+  "feed-panda": "#110E07",
+  "messi-albiceleste": "#021115",
+  "3d-kinematic-visualizer": "#0A050F",
+  "jersey-configurator": "#050F15",
+  "lounge-chair-configurator": "#0B1008",
+  "watch-configurator": "#130E0F",
+  "scientific-exploration": "#100908",
+  "medical-education": "#130607",
+  "product-discovery-ar": "#050A02",
+  "comfort-chair-configurator": "#0F0E0D",
+};
+
 export default function ProjectShowcase() {
   const { theme } = usePortfolio();
   const [activeEmbedId, setActiveEmbedId] = useState<string | null>(null);
@@ -23,31 +49,44 @@ export default function ProjectShowcase() {
 
   const isLight = theme === "light";
 
-  // Ambient background glow color logic
   const activeProject = projects.find(p => p.id === hoveredProjectId);
-  const ambientGlowColor = activeProject 
-    ? `${activeProject.backgroundColor}26` // 15% opacity hex
-    : (isLight ? "rgba(20, 184, 166, 0.04)" : "rgba(20, 184, 166, 0.02)");
+  
+  // Immersive full-screen background tint transition
+  const defaultBg = isLight ? "#FAF6F0" : "#09090b";
+  const sectionBgColor = activeProject 
+    ? (isLight ? (lightBgTints[activeProject.id] || defaultBg) : (darkBgTints[activeProject.id] || defaultBg))
+    : defaultBg;
 
-  const ambientGlowColorAlt = activeProject
-    ? `${activeProject.backgroundColor}1a` // 10% opacity hex
-    : (isLight ? "rgba(251, 146, 60, 0.04)" : "rgba(251, 146, 60, 0.02)");
+  // Ambient organic glow colors
+  const blobColor = activeProject 
+    ? activeProject.backgroundColor 
+    : (isLight ? "#14b8a6" : "#115e59");
+  const blobOpacity = activeProject ? 0.22 : 0.06;
+
+  const blobColorAlt = activeProject
+    ? activeProject.backgroundColor 
+    : (isLight ? "#f97316" : "#c2410c");
+  const blobOpacityAlt = activeProject ? 0.15 : 0.04;
 
   return (
-    <section className={`w-full min-h-screen py-24 px-8 md:px-12 transition-colors duration-700 pointer-events-auto relative overflow-hidden ${
-      isLight ? 'bg-[#FAF6F0] text-black' : 'bg-[#09090b] text-white border-t border-zinc-900'
-    }`}>
+    <motion.section 
+      animate={{ backgroundColor: sectionBgColor }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className={`w-full min-h-screen py-24 px-8 md:px-12 pointer-events-auto relative overflow-hidden ${
+        isLight ? 'text-black' : 'text-white border-t border-zinc-900'
+      }`}
+    >
       
       {/* Mancini-inspired Dynamic Background Ambient Glows */}
       <motion.div 
-        animate={{ backgroundColor: ambientGlowColor }}
+        animate={{ backgroundColor: blobColor, opacity: blobOpacity }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="absolute top-1/4 left-[-10%] w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none" 
+        className="absolute top-1/4 left-[5%] w-[800px] h-[800px] rounded-full blur-[150px] pointer-events-none" 
       />
       <motion.div 
-        animate={{ backgroundColor: ambientGlowColorAlt }}
+        animate={{ backgroundColor: blobColorAlt, opacity: blobOpacityAlt }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="absolute bottom-1/4 right-[-10%] w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none" 
+        className="absolute bottom-1/4 right-[5%] w-[800px] h-[800px] rounded-full blur-[150px] pointer-events-none" 
       />
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -96,8 +135,8 @@ export default function ProjectShowcase() {
                   borderColor: isHovered ? project.backgroundColor : undefined,
                   boxShadow: isHovered 
                     ? (isLight 
-                        ? `0 20px 50px -12px ${project.backgroundColor}26` 
-                        : `0 20px 50px -12px ${project.backgroundColor}40`) 
+                        ? `0 20px 50px -12px ${project.backgroundColor}33` 
+                        : `0 20px 50px -12px ${project.backgroundColor}59`) 
                     : undefined,
                   transform: isHovered ? 'translateY(-8px)' : undefined
                 }}
@@ -269,6 +308,6 @@ export default function ProjectShowcase() {
           })}
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
