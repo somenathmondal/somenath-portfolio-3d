@@ -109,5 +109,15 @@ export const projects: Project[] = [
     image: "/Comfort_Chair_Configurator.webp",
     video: "/videos/comfort-chair.mp4",
     backgroundColor: "#413934"
+  },
+  {
+    id: "seashore-house",
+    title: "Seashore House",
+    description: "A high-fidelity 3D architectural visualization of a modern luxury villa on the seashore. Features interactive lighting adjustments, realistic water reflection shaders, and organic tree/foliage wind sways.",
+    tech: ["Three.js", "WebGL", "GSAP", "ArchViz"],
+    link: "https://threejs-archviz.vercel.app/",
+    image: "/seashore_house.webp",
+    video: "/videos/seashore-house.mp4",
+    backgroundColor: "#02748e"
   }
 ];

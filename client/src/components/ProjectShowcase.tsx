@@ -15,6 +15,7 @@ const lightBgTints: Record<string, string> = {
   "medical-education": "#FAF2F2",
   "product-discovery-ar": "#F4FAF2",
   "comfort-chair-configurator": "#FAF8F6",
+  "seashore-house": "#F1FAF8",
 };
 
 const darkBgTints: Record<string, string> = {
@@ -28,6 +29,7 @@ const darkBgTints: Record<string, string> = {
   "medical-education": "#130607",
   "product-discovery-ar": "#050A02",
   "comfort-chair-configurator": "#0F0E0D",
+  "seashore-house": "#021115",
 };
 
 export default function ProjectShowcase() {
