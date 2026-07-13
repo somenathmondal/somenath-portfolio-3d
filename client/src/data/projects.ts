@@ -22,6 +22,15 @@ export const projects: Project[] = [
     image: "/Feed_Panda_Demo.webp",
   },
   {
+    id: "rich-house-archviz",
+    accent: "#c5a07f",
+    title: "Rich House ArchViz",
+    description: "A real-time architectural visualization of a luxury seashore villa, explorable in the browser. Features HDRI sunlight, reflective pool water, wind-swayed grass shaders, and cinematic camera tours.",
+    tech: ["Three.js", "WebGL", "GLSL", "HDRI Lighting"],
+    link: "https://rich-house-xi.vercel.app/",
+    image: "/Rich_House_ArchViz.webp"
+  },
+  {
     id: "messi-albiceleste",
     accent: "#4f7fb5",
     title: "Messi & The Albiceleste",
