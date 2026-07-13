@@ -4,7 +4,8 @@ import { ScrollControls, Scroll } from "@react-three/drei";
 import { usePortfolio } from "./lib/stores/usePortfolio";
 import LandingPage from "./components/LandingPage";
 import LoadingScreen from "./components/LoadingScreen";
-import ProjectShowcase from "./components/ProjectShowcase";
+import ProjectOverlay from "./components/ProjectOverlay";
+import { WHEEL_SPACER_VH } from "./components/ProjectWheel";
 import LandingHero from "./components/LandingHero";
 import CustomCursor from "./components/CustomCursor";
 import { Analytics } from "@vercel/analytics/react";
@@ -78,7 +79,8 @@ function App() {
             <Scroll html style={{ width: '100%', left: 0, right: 0 }}>
               <div ref={htmlContainerRef} className="w-full">
                 <LandingHero />
-                <ProjectShowcase />
+                {/* Scroll room for the 3D project wheel; the wheel and its overlay render elsewhere */}
+                <div style={{ height: `${WHEEL_SPACER_VH}vh` }} className="w-full pointer-events-none" />
                 <div className={`w-full h-[100vh] flex items-center justify-center ${theme === 'light' ? 'bg-zinc-900' : 'bg-[#121214] border-t border-zinc-900'}`}>
                   <h2 className={`font-serif italic text-4xl ${theme === 'light' ? 'text-white' : 'text-stone-300'}`}>More to come...</h2>
                 </div>
@@ -93,6 +95,8 @@ function App() {
       {!loadingDone && (
         <LoadingScreen onFinished={() => setLoadingDone(true)} />
       )}
+
+      <ProjectOverlay />
 
       <CustomCursor />
     </div>

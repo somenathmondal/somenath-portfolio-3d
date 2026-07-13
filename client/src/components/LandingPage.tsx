@@ -6,6 +6,7 @@ import { EffectComposer, Bloom, Noise, DepthOfField } from "@react-three/postpro
 import * as THREE from "three";
 import { usePortfolio } from "../lib/stores/usePortfolio";
 import WavyGrass from "./WavyGrass";
+import ProjectWheel from "./ProjectWheel";
 
 // Debug-only tools, loaded on demand behind the #debug URL hash so they stay out of the main bundle
 const Perf = lazy(() => import("r3f-perf").then((m) => ({ default: m.Perf })));
@@ -326,6 +327,8 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
       )}
 
       {/* <WavyGrass scrollOffset={currentScroll} /> */}
+
+      <ProjectWheel />
 
       <group position={[params.groupX, params.groupY + exitProgress * 3, -exitProgress * 4]}>
         <InteractiveLetter 

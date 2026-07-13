@@ -9,6 +9,12 @@ interface PortfolioState {
   setInfluenceRadius: (radius: number) => void;
   cursorRadius: number;
   setCursorRadius: (radius: number) => void;
+  activeProject: number;
+  setActiveProject: (index: number) => void;
+  wheelVisible: boolean;
+  setWheelVisible: (visible: boolean) => void;
+  scrollToProject: ((index: number) => void) | null;
+  setScrollToProject: (fn: ((index: number) => void) | null) => void;
 }
 
 export const usePortfolio = create<PortfolioState>((set) => ({
@@ -20,5 +26,10 @@ export const usePortfolio = create<PortfolioState>((set) => ({
   setInfluenceRadius: (radius: number) => set({ influenceRadius: radius }),
   cursorRadius: 120, // Default HTML cursor radius in pixels (240px diameter)
   setCursorRadius: (radius: number) => set({ cursorRadius: radius }),
+  activeProject: 0,
+  setActiveProject: (index: number) => set({ activeProject: index }),
+  wheelVisible: false,
+  setWheelVisible: (visible: boolean) => set({ wheelVisible: visible }),
+  scrollToProject: null,
+  setScrollToProject: (fn) => set({ scrollToProject: fn }),
 }));
-
