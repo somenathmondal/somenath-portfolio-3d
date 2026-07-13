@@ -1,13 +1,14 @@
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useRef, useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Float, MeshTransmissionMaterial, Environment, Text3D, Center, ContactShadows, useScroll, Sky } from "@react-three/drei";
 import posthog from "posthog-js";
 import { EffectComposer, Bloom, Noise, DepthOfField } from "@react-three/postprocessing";
-import { Perf } from "r3f-perf";
 import * as THREE from "three";
-import { Pane } from "tweakpane";
 import { usePortfolio } from "../lib/stores/usePortfolio";
 import WavyGrass from "./WavyGrass";
+
+// Debug-only tools, loaded on demand behind the #debug URL hash so they stay out of the main bundle
+const Perf = lazy(() => import("r3f-perf").then((m) => ({ default: m.Perf })));
 
 interface LandingPageProps { scrollProgress: number; }
 
@@ -248,30 +249,40 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
 
   useEffect(() => {
     if (window.location.hash !== "#debug") return;
-    const pane = new Pane({ title: "Letter Physics Debug", expanded: true }) as any;
-    
-    const f1 = pane.addFolder({ title: "Letters" });
-    f1.addBinding(params, "letterSize", { min: 0.1, max: 5, step: 0.1 });
-    f1.addBinding(params, "letterSpacing", { min: -1, max: 2, step: 0.01 }); 
-    
-    const f2 = pane.addFolder({ title: "Physics & Cursor" });
-    f2.addBinding(params, "springVelocity", { min: 0.01, max: 0.5, step: 0.01 });
-    f2.addBinding(params, "influenceRadius", { min: 0.1, max: 10, step: 0.1, label: "Influence Radius (3D)" });
-    f2.addBinding(params, "cursorRadius", { min: 10, max: 400, step: 1, label: "Cursor Radius (px)" });
-    f2.addBinding(params, "damping", { min: 0.8, max: 0.99, step: 0.01 });
-    f2.addBinding(params, "pushForce", { min: 0, max: 0.2, step: 0.01 });
-    
-    const fGroup = pane.addFolder({ title: "3D Group Position" });
-    fGroup.addBinding(params, "groupX", { min: -2, max: 2, step: 0.01, label: "Group X" });
-    fGroup.addBinding(params, "groupY", { min: -2, max: 2, step: 0.01, label: "Group Y" });
-    
-    const f3 = pane.addFolder({ title: "Diagnostics" });
-    f3.addBinding(params, "showPerf", { label: "Show Stats" });
+    let pane: any;
+    let disposed = false;
 
-    pane.on("change", (ev: any) => {
-      setParams((prev) => ({ ...prev, [ev.target.key as string]: ev.value }));
+    import("tweakpane").then(({ Pane }) => {
+      if (disposed) return;
+      pane = new Pane({ title: "Letter Physics Debug", expanded: true }) as any;
+
+      const f1 = pane.addFolder({ title: "Letters" });
+      f1.addBinding(params, "letterSize", { min: 0.1, max: 5, step: 0.1 });
+      f1.addBinding(params, "letterSpacing", { min: -1, max: 2, step: 0.01 });
+
+      const f2 = pane.addFolder({ title: "Physics & Cursor" });
+      f2.addBinding(params, "springVelocity", { min: 0.01, max: 0.5, step: 0.01 });
+      f2.addBinding(params, "influenceRadius", { min: 0.1, max: 10, step: 0.1, label: "Influence Radius (3D)" });
+      f2.addBinding(params, "cursorRadius", { min: 10, max: 400, step: 1, label: "Cursor Radius (px)" });
+      f2.addBinding(params, "damping", { min: 0.8, max: 0.99, step: 0.01 });
+      f2.addBinding(params, "pushForce", { min: 0, max: 0.2, step: 0.01 });
+
+      const fGroup = pane.addFolder({ title: "3D Group Position" });
+      fGroup.addBinding(params, "groupX", { min: -2, max: 2, step: 0.01, label: "Group X" });
+      fGroup.addBinding(params, "groupY", { min: -2, max: 2, step: 0.01, label: "Group Y" });
+
+      const f3 = pane.addFolder({ title: "Diagnostics" });
+      f3.addBinding(params, "showPerf", { label: "Show Stats" });
+
+      pane.on("change", (ev: any) => {
+        setParams((prev) => ({ ...prev, [ev.target.key as string]: ev.value }));
+      });
     });
-    return () => pane.dispose();
+
+    return () => {
+      disposed = true;
+      pane?.dispose();
+    };
   }, []);
 
   const exitProgress = Math.min(currentScroll * scroll.pages, 1.0);
@@ -279,7 +290,11 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   return (
     <>
       <color attach="background" args={[theme === 'light' ? "#FAF6F0" : "#09090b"]} />
-      {params.showPerf && <Perf position="bottom-right" minimal={isMobile} />}
+      {params.showPerf && (
+        <Suspense fallback={null}>
+          <Perf position="bottom-right" minimal={isMobile} />
+        </Suspense>
+      )}
       
       <Environment preset="studio" />
       <ambientLight intensity={theme === "dark" ? 0.2 : 0.4} />
