@@ -5,6 +5,7 @@ import { usePortfolio } from "./lib/stores/usePortfolio";
 import LandingPage from "./components/LandingPage";
 import LoadingScreen from "./components/LoadingScreen";
 import ProjectOverlay from "./components/ProjectOverlay";
+import SeoIndex from "./components/SeoIndex";
 import { WHEEL_SPACER_VH } from "./components/ProjectWheel";
 import LandingHero from "./components/LandingHero";
 import CustomCursor from "./components/CustomCursor";
@@ -96,6 +97,8 @@ function App() {
       )}
 
       <ProjectOverlay />
+
+      <SeoIndex />
 
       <CustomCursor />
     </div>
