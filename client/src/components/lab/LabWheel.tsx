@@ -3,37 +3,21 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useScroll, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { easing } from "maath";
-import { projects } from "../data/projects";
-import { usePortfolio } from "../lib/stores/usePortfolio";
-import { trackEvent } from "../lib/analytics";
-import { ensureAudio, playTick } from "../lib/sound";
-import WheelPlane, { WheelShared, WheelEffects } from "./WheelPlane";
-
-/** Scroll room the wheel gets in the HTML layer, in viewport-heights. Keep in sync with App.tsx spacer. */
-export const WHEEL_SPACER_VH = 550;
+import { projects } from "../../data/projects";
+import { usePortfolio } from "../../lib/stores/usePortfolio";
+import { useLab } from "../../lib/stores/useLab";
+import { trackEvent } from "../../lib/analytics";
+import { ensureAudio, playTick } from "../../lib/sound";
+import WheelPlane, { WheelShared } from "../WheelPlane";
 
 const N = projects.length;
 const PLANE_ASPECT = 16 / 10;
-
-// The wheel starts turning once the hero (first 100vh) has scrolled away
-// and finishes when the spacer has WHEEL_SPACER_VH - 100 vh left below the fold.
-const SECTION_START_VH = 100;
-const SECTION_LENGTH_VH = WHEEL_SPACER_VH - 100;
-
 const THEME_BG = { light: "#FAF6F0", dark: "#09090b" };
 const TINT_STRENGTH = { light: 0.2, dark: 0.3 };
 
-// The recipe chosen in the effects lab. Poke lost (too aggressive); the rest are always on.
-const EFFECTS: WheelEffects = {
-  ripple: true,
-  bend: true,
-  dissolve: true,
-  poke: false,
-  shockwave: true,
-};
-const getEffects = () => EFFECTS;
+const getEffects = () => useLab.getState().effects;
 
-export default function ProjectWheel() {
+export default function LabWheel() {
   const scroll = useScroll();
   const { viewport, scene } = useThree();
   const isMobile = viewport.width < 7;
@@ -41,12 +25,11 @@ export default function ProjectWheel() {
 
   const groupRef = useRef<THREE.Group>(null);
   const shared = useRef<WheelShared>({ rotation: 0, bend: 0 }).current;
-  const activeRef = useRef(-1);
-  const visibleRef = useRef(false);
-  const prevProgress = useRef(0);
+  const activeRef = useRef(0);
+  const prevOffset = useRef(0);
   const bgTarget = useMemo(() => new THREE.Color(), []);
-  const accentColors = useMemo(() => projects.map((p) => new THREE.Color(p.accent)), []);
   const baseColor = useMemo(() => new THREE.Color(), []);
+  const accentColors = useMemo(() => projects.map((p) => new THREE.Color(p.accent)), []);
 
   const radius = isMobile ? 2.9 : 4.2;
   const planeW = isMobile ? 2.1 : 3.1;
@@ -66,16 +49,18 @@ export default function ProjectWheel() {
     });
   }, [textures]);
 
-  // Expose "jump to project i" for the minimap: converts an index back into a scrollTop.
+  // The whole lab page is the wheel section
   useEffect(() => {
+    usePortfolio.getState().setWheelVisible(true);
+    usePortfolio.getState().setActiveProject(0);
     const el = scroll.el;
     usePortfolio.getState().setScrollToProject((i: number) => {
-      const vh = window.innerHeight / 100;
-      const top = (SECTION_START_VH + (SECTION_LENGTH_VH * i) / (N - 1)) * vh;
-      el.scrollTo({ top, behavior: "smooth" });
+      const max = el.scrollHeight - el.clientHeight;
+      el.scrollTo({ top: (max * i) / (N - 1), behavior: "smooth" });
     });
     window.addEventListener("pointerdown", ensureAudio, { once: true });
     return () => {
+      usePortfolio.getState().setWheelVisible(false);
       usePortfolio.getState().setScrollToProject(null);
       window.removeEventListener("pointerdown", ensureAudio);
     };
@@ -93,46 +78,30 @@ export default function ProjectWheel() {
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
+    const p = scroll.offset;
 
-    const pages = scroll.pages;
-    const scrollTopVh = scroll.offset * (pages - 1) * 100;
-    const p = THREE.MathUtils.clamp((scrollTopVh - SECTION_START_VH) / SECTION_LENGTH_VH, 0, 1);
-
-    // Signed section-progress velocity drives the bend
-    const velocity = delta > 0 ? (p - prevProgress.current) / delta : 0;
-    prevProgress.current = p;
+    // Signed scroll velocity drives the bend
+    const velocity = delta > 0 ? (p - prevOffset.current) / delta : 0;
+    prevOffset.current = p;
     easing.damp(shared, "bend", THREE.MathUtils.clamp(velocity * 2.2, -0.9, 0.9), 0.12, delta);
 
-    // Only render (and tint the background) while the section is anywhere near the viewport
-    const active = scrollTopVh > SECTION_START_VH - 60 && scrollTopVh < SECTION_START_VH + SECTION_LENGTH_VH + 60;
-    groupRef.current.visible = active;
-    if (active !== visibleRef.current) {
-      visibleRef.current = active;
-      usePortfolio.getState().setWheelVisible(active);
-    }
+    groupRef.current.position.set(centerX, centerY, centerZ);
+    easing.damp(groupRef.current.rotation, "x", -p * (N - 1) * step, 0.28, delta);
+    shared.rotation = groupRef.current.rotation.x;
 
-    // Broadcast the project currently holding the front slot
     const index = Math.round(p * (N - 1));
-    if (active && index !== activeRef.current) {
-      const isFirstFrame = activeRef.current === -1;
+    if (index !== activeRef.current) {
       activeRef.current = index;
       usePortfolio.getState().setActiveProject(index);
-      if (!isFirstFrame) playTick(Math.abs(velocity) * 0.15);
+      if (useLab.getState().effects.sound) playTick(Math.abs(velocity) * 0.15);
     }
 
-    // Background tint: ease toward the active project's accent, or back to the theme base
+    // Background tint toward the active accent (the aurora layers on top when enabled)
     baseColor.set(THEME_BG[theme]);
-    bgTarget.copy(baseColor);
-    if (active) bgTarget.lerp(accentColors[index], TINT_STRENGTH[theme]);
+    bgTarget.copy(baseColor).lerp(accentColors[index], TINT_STRENGTH[theme]);
     if (scene.background instanceof THREE.Color) {
       easing.dampC(scene.background, bgTarget, 0.4, delta);
     }
-
-    // Rise-in while the hero scrolls away, then rotate with scroll
-    const entrance = THREE.MathUtils.clamp((SECTION_START_VH - scrollTopVh) / 100, 0, 1);
-    groupRef.current.position.set(centerX, centerY - entrance * 2.5, centerZ);
-    easing.damp(groupRef.current.rotation, "x", -p * (N - 1) * step, 0.28, delta);
-    shared.rotation = groupRef.current.rotation.x;
   });
 
   return (

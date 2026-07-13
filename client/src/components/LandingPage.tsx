@@ -7,6 +7,8 @@ import * as THREE from "three";
 import { usePortfolio } from "../lib/stores/usePortfolio";
 import WavyGrass from "./WavyGrass";
 import ProjectWheel from "./ProjectWheel";
+import Aurora from "./Aurora";
+import Dust from "./Dust";
 
 // Debug-only tools, loaded on demand behind the #debug URL hash so they stay out of the main bundle
 const Perf = lazy(() => import("r3f-perf").then((m) => ({ default: m.Perf })));
@@ -328,6 +330,9 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
 
       {/* <WavyGrass scrollOffset={currentScroll} /> */}
 
+      {/* Winning effects-lab atmosphere: only visible while the wheel section is on screen */}
+      <Aurora enabled={() => usePortfolio.getState().wheelVisible} />
+      <Dust enabled={() => usePortfolio.getState().wheelVisible} />
       <ProjectWheel />
 
       <group position={[params.groupX, params.groupY + exitProgress * 3, -exitProgress * 4]}>
