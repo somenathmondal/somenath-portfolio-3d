@@ -9,7 +9,6 @@ import { WHEEL_SPACER_VH } from "./components/ProjectWheel";
 import LandingHero from "./components/LandingHero";
 import CustomCursor from "./components/CustomCursor";
 import { Analytics } from "@vercel/analytics/react";
-import "@fontsource/inter";
 
 function App() {
   const { theme } = usePortfolio();

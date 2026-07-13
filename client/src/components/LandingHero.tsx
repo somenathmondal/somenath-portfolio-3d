@@ -71,11 +71,10 @@ export default function LandingHero() {
             transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="w-full flex items-center justify-center"
           >
-            <h2 
+            <h2
               className={`text-sm md:text-lg lg:text-xl font-medium tracking-wide leading-none whitespace-nowrap ${
                 theme === 'light' ? 'text-zinc-800' : 'text-zinc-200'
               }`}
-              style={{ fontFamily: "'Ubuntu', sans-serif" }}
             >
               Putting the <span className="font-bold text-black dark:text-white">JOY</span> in 3D <span className="animate-heartbeat ml-1">❤️</span>
             </h2>

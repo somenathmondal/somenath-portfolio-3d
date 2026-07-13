@@ -6,8 +6,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Playfair Display"', "serif"],
-        sans: ["Inter", "sans-serif"],
+        serif: ["Fraunces", "serif"],
+        sans: ["Satoshi", "sans-serif"],
+        mono: ['"Geist Mono"', "monospace"],
       },
       borderRadius: {
         lg: "var(--radius)",
