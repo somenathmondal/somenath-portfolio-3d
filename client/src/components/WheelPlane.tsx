@@ -88,7 +88,6 @@ export default function WheelPlane({
       uBrightness: { value: 1 },
       uDevelop: { value: 1 },
       uDissolve: { value: 0 },
-      uChroma: { value: 0 },
       uAccent: { value: new THREE.Color(projects[index].accent) },
       uUvScale: { value: scale },
       uUvOffset: { value: offset },
@@ -122,7 +121,6 @@ export default function WheelPlane({
 
     u.uTime.value = state.clock.elapsedTime;
     u.uRipple.value = effects.ripple ? 1 : 0;
-    u.uChroma.value = effects.ripple ? 1 : 0;
     u.uDissolve.value = effects.dissolve ? 1 : 0;
     u.uBend.value = effects.bend ? shared.bend : 0;
 

@@ -2,13 +2,17 @@ uniform sampler2D uMap;
 uniform float uBrightness;  // slot emphasis: 1 at front, dimmer for neighbors
 uniform float uDevelop;     // slot proximity: 1 = front (fully developed), 0 = far
 uniform float uDissolve;    // effect toggle
-uniform float uChroma;      // follows the ripple toggle
+uniform float uRipple;      // effect toggle — drives the refraction lens
+uniform vec2 uMouse;        // pointer position in plane UV space (damped)
+uniform float uMouseActive; // damped 0..1 while pointer is over the plane
+uniform float uShock;       // shockwave progress 0..1
+uniform vec2 uShockCenter;
+uniform vec2 uSize;         // plane dimensions, for aspect-correct distances
 uniform vec3 uAccent;       // project accent for the developing edge
 uniform vec2 uUvScale;      // cover-fit crop
 uniform vec2 uUvOffset;
 
 varying vec2 vUv;
-varying float vDistort;
 
 // Cheap value-noise fbm for the dissolve pattern
 float hash(vec2 p) {
@@ -35,14 +39,27 @@ float fbm(vec2 p) {
 }
 
 void main() {
-  vec2 uv = vUv * uUvScale + uUvOffset;
+  vec2 aspect = vec2(uSize.x / uSize.y, 1.0);
 
-  // Chromatic split proportional to how distorted this fragment is
-  float shift = vDistort * 0.016 * uChroma;
-  vec3 col;
-  col.r = texture2D(uMap, uv + vec2(shift, 0.0)).r;
-  col.g = texture2D(uMap, uv).g;
-  col.b = texture2D(uMap, uv - vec2(shift, 0.0)).b;
+  // Lens refraction — the cursor bump behaves like a glass lens: samples are pulled
+  // toward its center, magnifying the image under the cursor. No color splitting.
+  vec2 refracted = vUv;
+  float d = distance(vUv * aspect, uMouse * aspect);
+  float bump = exp(-d * d * 26.0) * uRipple * uMouseActive;
+  vec2 toMouse = (uMouse - vUv) * aspect;
+  float toMouseLen = max(length(toMouse), 0.0001);
+  refracted += (toMouse / toMouseLen) * bump * 0.06;
+
+  // The click shockwave ring refracts too, so the click feels physical
+  float sd = distance(vUv * aspect, uShockCenter * aspect);
+  float ringRadius = uShock * 1.4;
+  float ring = exp(-pow((sd - ringRadius) * 9.0, 2.0)) * (1.0 - uShock) * step(0.001, uShock);
+  vec2 toShock = (uShockCenter - vUv) * aspect;
+  float toShockLen = max(length(toShock), 0.0001);
+  refracted += (toShock / toShockLen) * ring * 0.035;
+
+  vec2 uv = refracted * uUvScale + uUvOffset;
+  vec3 col = texture2D(uMap, uv).rgb;
 
   // Dissolve — the image "develops" through noise as the project reaches the front slot.
   // Undeveloped areas fall back to an accent-washed monochrome; the reveal edge glows accent.
