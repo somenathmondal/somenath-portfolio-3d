@@ -118,8 +118,24 @@ export default function LandingHero() {
           className="flex flex-col items-center md:items-end gap-3 md:gap-4 pointer-events-auto"
         >
           <div className="flex gap-4 md:gap-8 flex-wrap justify-center md:justify-end">
-            <a 
-              href="https://www.linkedin.com/in/somenath-mondal-xr-tech/" 
+            <a
+              href="mailto:somenathdolman@gmail.com"
+              onClick={() => {
+                posthog.capture("social_link_clicked", { platform: "email" });
+                if (typeof window !== "undefined" && (window as any).gtag) {
+                  (window as any).gtag("event", "social_link_clicked", { platform: "email" });
+                }
+              }}
+              className={`text-[8px] md:text-[10px] tracking-widest uppercase font-bold border-b transition-colors ${
+                theme === 'light'
+                  ? 'text-black border-black hover:text-zinc-500 hover:border-zinc-500'
+                  : 'text-white border-white hover:text-orange-200 hover:border-orange-200'
+              }`}
+            >
+              Email
+            </a>
+            <a
+              href="https://www.linkedin.com/in/somenath-mondal-xr-tech/"
               target="_blank" 
               rel="noopener noreferrer" 
               onClick={() => {
