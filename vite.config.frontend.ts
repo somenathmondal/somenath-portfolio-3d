@@ -11,7 +11,19 @@ export default defineConfig({
   root: './client',
   build: {
     outDir: '../dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/node_modules/three/')) {
+            return 'vendor-three-core';
+          }
+          if (id.includes('/node_modules/posthog-js/')) {
+            return 'vendor-analytics';
+          }
+        },
+      },
+    },
   },
   resolve: {
     alias: {

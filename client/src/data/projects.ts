@@ -5,9 +5,21 @@ export interface Project {
   tech: string[];
   link: string;
   image?: string;
+  imagePosition?: string;  // CSS object-position for framing portrait/cropped previews
+  video?: string;          // Preview video loop (.mp4)
+  backgroundColor: string; // Dynamic background accent theme color
 }
 
 export const projects: Project[] = [
+  {
+    id: "seashore-house",
+    title: "Seashore House",
+    description: "A high-fidelity 3D architectural visualization of a modern luxury villa on the seashore. Features interactive lighting adjustments, realistic water reflection shaders, and organic tree/foliage wind sways.",
+    tech: ["Three.js", "WebGL", "GSAP", "ArchViz"],
+    link: "https://rich-house-xi.vercel.app/",
+    image: "/seashore_house.webp",
+    backgroundColor: "#02748e"
+  },
   {
     id: "feed-panda",
     title: "Feed Panda",
@@ -15,6 +27,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "Vanilla JS", "GLSL"],
     link: "https://feed-panda.vercel.app/",
     image: "/Feed_Panda_Demo.webp",
+    backgroundColor: "#7e6125"
   },
   {
     id: "messi-albiceleste",
@@ -22,7 +35,8 @@ export const projects: Project[] = [
     description: "An interactive, editorial 3D visual journey celebrating Lionel Messi's iconic World Cup jerseys with Argentina. Built with WebGL, WebGL textures generated using Fabric.js dynamic canvas pipelines, and smooth scroll-driven animations from 2006 to 2026.",
     tech: ["Three.js", "Fabric.js", "Vanilla JS", "WebGL"],
     link: "https://messi-in-world-cups-3d.vercel.app/",
-    image: "/Messi_Albiceleste.webp"
+    image: "/Messi_Albiceleste.webp",
+    backgroundColor: "#02748e"
   },
   {
     id: "3d-kinematic-visualizer",
@@ -30,7 +44,8 @@ export const projects: Project[] = [
     description: "A real-time 3D audio-reactive experience featuring a radial kinematic spoke column and a 61-key piano. Synthesizes MIDI sequences in the browser with Tone.js, triggering custom physics-based ball drops, key depressions, and glowing particle spark VFX in Three.js.",
     tech: ["Three.js", "Tone.js", "Vanilla JS", "Post-processing"],
     link: "https://3d-kinematic-visualizer.vercel.app",
-    image: "/3D_Kinematic_Visualizer.webp"
+    image: "/3D_Kinematic_Visualizer.webp",
+    backgroundColor: "#431859"
   },
   {
     id: "jersey-configurator",
@@ -39,6 +54,7 @@ export const projects: Project[] = [
     tech: ["React", "Three.js", "R3F", "Tailwind CSS"],
     link: "https://gf-sports.fr/",
     image: "/Jersey_Configurator.webp",
+    backgroundColor: "#24587c"
   },
   {
     id: "lounge-chair-configurator",
@@ -46,7 +62,9 @@ export const projects: Project[] = [
     description: "A high-fidelity 3D product customization tool for furniture e-commerce. Enables customers to customize the materials, leather colors, and wood veneers of the classic Eames Lounge Chair, with full WebXR and AR preview features.",
     tech: ["Three.js", "Vanilla JS", "WebGL", "AR/XR"],
     link: "https://nexreality.io/projects/lounge-chair/index.html",
-    image: "/Lounge_Chair_Configurator.webp"
+    image: "/Lounge_Chair_Configurator.webp",
+    imagePosition: "50% 88%",
+    backgroundColor: "#586a3f"
   },
   {
     id: "watch-configurator",
@@ -54,7 +72,8 @@ export const projects: Project[] = [
     description: "An intricate WebGL product customizer for premium automatic watches. Showcases high-precision micro-modeling of dials, gear assemblies, hands, and strap configurations with real-time dynamic shadows and close-up zoom states.",
     tech: ["Three.js", "WebGL", "GSAP", "3D Modeling"],
     link: "https://nexreality.io/projects/watch/index.html",
-    image: "/Watch_Configurator.webp"
+    image: "/Watch_Configurator.webp",
+    backgroundColor: "#7c4f58"
   },
   {
     id: "scientific-exploration",
@@ -62,7 +81,9 @@ export const projects: Project[] = [
     description: "An educational physics-based 3D simulator demonstrating the flight dynamics and rotor mechanics of the NASA Mars Ingenuity Helicopter. Features flight path animation controls and interactive instrumentation overlays.",
     tech: ["Three.js", "WebGL", "GSAP", "Animation"],
     link: "https://nexreality.io/projects/scientific-exploration/index.html",
-    image: "/Scientific_Exploration.webp"
+    image: "/Scientific_Exploration.webp",
+    imagePosition: "50% 52%",
+    backgroundColor: "#4b2520"
   },
   {
     id: "medical-education",
@@ -70,7 +91,8 @@ export const projects: Project[] = [
     description: "A high-fidelity 3D medical visualization tool designed for surgical training and anatomy education. Features interactive cross-section cutting planes, real-time beat synchronization, and detailed vascular label tracking.",
     tech: ["Three.js", "WebGL", "Custom Shaders", "3D Rendering"],
     link: "https://nexreality.io/projects/medical-education/index.html",
-    image: "/Medical_Education.webp"
+    image: "/Medical_Education.webp",
+    backgroundColor: "#7c242c"
   },
   {
     id: "product-discovery-ar",
@@ -78,7 +100,8 @@ export const projects: Project[] = [
     description: "An interactive 3D WebGL product explorer demonstrating the folding hinge mechanics, screen animations, and AR-ready camera placement of the Samsung Galaxy Z Flip3.",
     tech: ["Three.js", "WebGL", "GSAP", "AR/XR"],
     link: "https://nexreality.io/projects/product-discovery/index.html",
-    image: "/Product_Discovery_AR.webp"
+    image: "/Product_Discovery_AR.webp",
+    backgroundColor: "#182c04"
   },
   {
     id: "comfort-chair-configurator",
@@ -86,6 +109,8 @@ export const projects: Project[] = [
     description: "An interactive 3D chair configurator showcasing custom upholstery options, legs, and room settings for a personalized furniture shopping customer journey.",
     tech: ["Three.js", "WebGL", "GSAP", "3D Configurator"],
     link: "https://nexreality.io/projects/comfort-chair/index.html",
-    image: "/Comfort_Chair_Configurator.webp"
+    image: "/Comfort_Chair_Configurator.webp",
+    imagePosition: "50% 78%",
+    backgroundColor: "#413934"
   }
 ];
