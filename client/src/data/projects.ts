@@ -5,19 +5,28 @@ export interface Project {
   tech: string[];
   link: string;
   image?: string;
+  imagePosition?: string;  // CSS object-position for framing portrait/cropped previews
   video?: string;          // Preview video loop (.mp4)
   backgroundColor: string; // Dynamic background accent theme color
 }
 
 export const projects: Project[] = [
   {
+    id: "seashore-house",
+    title: "Seashore House",
+    description: "A high-fidelity 3D architectural visualization of a modern luxury villa on the seashore. Features interactive lighting adjustments, realistic water reflection shaders, and organic tree/foliage wind sways.",
+    tech: ["Three.js", "WebGL", "GSAP", "ArchViz"],
+    link: "https://rich-house-xi.vercel.app/",
+    image: "/seashore_house.webp",
+    backgroundColor: "#02748e"
+  },
+  {
     id: "feed-panda",
     title: "Feed Panda",
     description: "Interactive 3D game demo where users feed dumplings to a Kung Fu Panda character. Built to demonstrate character animation and physics in the browser.",
     tech: ["Three.js", "Vanilla JS", "GLSL"],
     link: "https://feed-panda.vercel.app/",
-    image: "/Feed_Panda_Demo.png",
-    video: "/videos/feed-panda.mp4",
+    image: "/Feed_Panda_Demo.webp",
     backgroundColor: "#7e6125"
   },
   {
@@ -26,8 +35,7 @@ export const projects: Project[] = [
     description: "An interactive, editorial 3D visual journey celebrating Lionel Messi's iconic World Cup jerseys with Argentina. Built with WebGL, WebGL textures generated using Fabric.js dynamic canvas pipelines, and smooth scroll-driven animations from 2006 to 2026.",
     tech: ["Three.js", "Fabric.js", "Vanilla JS", "WebGL"],
     link: "https://messi-in-world-cups-3d.vercel.app/",
-    image: "/Messi_Albiceleste.png",
-    video: "/videos/messi-albiceleste.mp4",
+    image: "/Messi_Albiceleste.webp",
     backgroundColor: "#02748e"
   },
   {
@@ -36,8 +44,7 @@ export const projects: Project[] = [
     description: "A real-time 3D audio-reactive experience featuring a radial kinematic spoke column and a 61-key piano. Synthesizes MIDI sequences in the browser with Tone.js, triggering custom physics-based ball drops, key depressions, and glowing particle spark VFX in Three.js.",
     tech: ["Three.js", "Tone.js", "Vanilla JS", "Post-processing"],
     link: "https://3d-kinematic-visualizer.vercel.app",
-    image: "/3D_Kinematic_Visualizer.png",
-    video: "/videos/3d-kinematic-visualizer.mp4",
+    image: "/3D_Kinematic_Visualizer.webp",
     backgroundColor: "#431859"
   },
   {
@@ -46,8 +53,7 @@ export const projects: Project[] = [
     description: "An advanced 3D garment customization platform. Users can visualize various jersey designs, apply custom logos, and experiment with materials in a real-time 3D environment with high-fidelity textures.",
     tech: ["React", "Three.js", "R3F", "Tailwind CSS"],
     link: "https://gf-sports.fr/",
-    image: "/Jersey_Configurator.png",
-    video: "/videos/jersey-configurator.mp4",
+    image: "/Jersey_Configurator.webp",
     backgroundColor: "#24587c"
   },
   {
@@ -57,7 +63,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "Vanilla JS", "WebGL", "AR/XR"],
     link: "https://nexreality.io/projects/lounge-chair/index.html",
     image: "/Lounge_Chair_Configurator.webp",
-    video: "/videos/lounge-chair-configurator.mp4",
+    imagePosition: "50% 88%",
     backgroundColor: "#586a3f"
   },
   {
@@ -67,7 +73,6 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "3D Modeling"],
     link: "https://nexreality.io/projects/watch/index.html",
     image: "/Watch_Configurator.webp",
-    video: "/videos/watch-configurator.mp4",
     backgroundColor: "#7c4f58"
   },
   {
@@ -77,7 +82,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "Animation"],
     link: "https://nexreality.io/projects/scientific-exploration/index.html",
     image: "/Scientific_Exploration.webp",
-    video: "/videos/scientific-exploration.mp4",
+    imagePosition: "50% 52%",
     backgroundColor: "#4b2520"
   },
   {
@@ -87,7 +92,6 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "Custom Shaders", "3D Rendering"],
     link: "https://nexreality.io/projects/medical-education/index.html",
     image: "/Medical_Education.webp",
-    video: "/videos/medical-education.mp4",
     backgroundColor: "#7c242c"
   },
   {
@@ -97,7 +101,6 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "AR/XR"],
     link: "https://nexreality.io/projects/product-discovery/index.html",
     image: "/Product_Discovery_AR.webp",
-    video: "/videos/product-discovery.mp4",
     backgroundColor: "#182c04"
   },
   {
@@ -107,17 +110,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "3D Configurator"],
     link: "https://nexreality.io/projects/comfort-chair/index.html",
     image: "/Comfort_Chair_Configurator.webp",
-    video: "/videos/comfort-chair.mp4",
+    imagePosition: "50% 78%",
     backgroundColor: "#413934"
-  },
-  {
-    id: "seashore-house",
-    title: "Seashore House",
-    description: "A high-fidelity 3D architectural visualization of a modern luxury villa on the seashore. Features interactive lighting adjustments, realistic water reflection shaders, and organic tree/foliage wind sways.",
-    tech: ["Three.js", "WebGL", "GSAP", "ArchViz"],
-    link: "https://threejs-archviz.vercel.app/",
-    image: "/seashore_house.webp",
-    video: "/videos/seashore-house.mp4",
-    backgroundColor: "#02748e"
   }
 ];

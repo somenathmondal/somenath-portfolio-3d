@@ -50,7 +50,7 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
     let target = 0;
     let current = 0;
 
-    const totalDuration = 2200; // ms
+    const totalDuration = 900; // ms
     const startTime = performance.now();
 
     const tick = (now: number) => {
@@ -61,7 +61,7 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
       target = easeOutQuad * 100;
 
       if (current < target) {
-        current = Math.min(current + 1.2, target);
+        current = target;
         const rounded = Math.round(current);
 
         // Update SVG trace outlines directly (stroke-dasharray is 600)
@@ -98,10 +98,10 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
           progressTextRef.current.textContent = "100%";
         }
 
-        // Wait 500ms beat for WebGL paint, then begin reveal phase
+        // Brief beat for WebGL paint, then begin reveal phase
         timeoutRef.current = setTimeout(() => {
           setPhase("revealing");
-        }, 500);
+        }, 150);
       }
     };
 
@@ -121,7 +121,7 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
 
     const el = backgroundOverlayRef.current;
     const startTime = performance.now();
-    const duration = 1200;
+    const duration = 650;
     let animId: number;
 
     const animate = (now: number) => {
