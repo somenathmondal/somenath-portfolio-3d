@@ -176,9 +176,9 @@ const StackCard = memo(function StackCard({
             }}
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[460px]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 lg:h-[460px]">
             {/* Visual Showcase (Media Container) */}
-            <div className="lg:col-span-7 relative overflow-hidden bg-zinc-950 border-b lg:border-b-0 lg:border-r border-inherit min-h-[280px] lg:min-h-full">
+            <div className="lg:col-span-7 relative overflow-hidden bg-zinc-950 border-b lg:border-b-0 lg:border-r border-inherit h-[260px] sm:h-[320px] lg:h-full">
               {isEmbedActive ? (
                 <div className="absolute inset-0 w-full h-full z-20 pointer-events-auto flex flex-col">
                   <div className={`w-full px-4 py-2 flex justify-between items-center z-30 ${
@@ -225,7 +225,7 @@ const StackCard = memo(function StackCard({
                       decoding="async"
                       style={{ objectPosition: project.imagePosition ?? "center" }}
                       onError={(e) => { e.currentTarget.style.display = "none"; }}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   )}
 
