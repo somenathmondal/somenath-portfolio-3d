@@ -222,7 +222,7 @@ function InteractiveLetter({ char, targetPosition, color, font, params, exitProg
 }
 
 export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
-  const { viewport } = useThree();
+  const { viewport, gl } = useThree();
   const scroll = useScroll();
   const isMobile = viewport.width < 7;
   const { theme, setInfluenceRadius, setCursorRadius } = usePortfolio();
@@ -231,6 +231,17 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
   const exitProgressRef = useRef(0);
   const isHeroVisibleRef = useRef(true);
   const [heroVisible, setHeroVisible] = useState(true);
+  const [isDebug, setIsDebug] = useState(() =>
+    typeof window !== "undefined" && window.location.hash.toLowerCase().includes("debug")
+  );
+
+  useEffect(() => {
+    const onHashChange = () => {
+      setIsDebug(window.location.hash.toLowerCase().includes("debug"));
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   const [params, setParams] = useState<DebugParams>({
     letterSize: isMobile ? 0.9 : 1.25,
@@ -278,17 +289,28 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
       isHeroVisibleRef.current = visibleNow;
       setHeroVisible(visibleNow);
     }
+
+    // Publish lightweight WebGL telemetry only when #debug is active
+    if (isDebug) {
+      (window as any).__PERF_TELEMETRY__ = {
+        calls: gl.info.render.calls,
+        triangles: gl.info.render.triangles,
+        geometries: gl.info.memory.geometries,
+        textures: gl.info.memory.textures,
+        heroActive: visibleNow,
+      };
+    }
   });
 
   // Lazy-load Tweakpane only when #debug hash is present
   useEffect(() => {
-    if (window.location.hash !== "#debug") return;
+    if (!isDebug) return;
     let disposed = false;
     let pane: any = null;
 
     import("tweakpane").then(({ Pane }) => {
       if (disposed) return;
-      pane = new Pane({ title: "Letter Physics Debug", expanded: true }) as any;
+      pane = new Pane({ title: "Letter Physics Debug", expanded: false }) as any;
 
       const f1 = pane.addFolder({ title: "Letters" });
       f1.addBinding(params, "letterSize", { min: 0.1, max: 5, step: 0.1 });
@@ -317,7 +339,7 @@ export default function LandingPage({ scrollProgress = 0 }: LandingPageProps) {
       disposed = true;
       pane?.dispose();
     };
-  }, []);
+  }, [isDebug]);
 
   return (
     <>

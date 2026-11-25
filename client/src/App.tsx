@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef, lazy } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ScrollControls, Scroll } from "@react-three/drei";
 import { usePortfolio } from "./lib/stores/usePortfolio";
@@ -9,11 +9,25 @@ import LandingHero from "./components/LandingHero";
 import CustomCursor from "./components/CustomCursor";
 import { Analytics } from "@vercel/analytics/react";
 
+const DebugPerfHUD = lazy(() => import("./components/DebugPerfHUD"));
+
+function isDebugHash() {
+  if (typeof window === "undefined") return false;
+  return window.location.hash.toLowerCase().includes("debug");
+}
+
 function App() {
   const { theme } = usePortfolio();
   const [loadingDone, setLoadingDone] = useState(false);
   const [pagesCount, setPagesCount] = useState(5.0);
+  const [debugMode, setDebugMode] = useState(isDebugHash);
   const htmlContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onHashChange = () => setDebugMode(isDebugHash());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   useEffect(() => {
     if (!htmlContainerRef.current) return;
@@ -88,6 +102,17 @@ function App() {
 
       {!loadingDone && (
         <LoadingScreen onFinished={() => setLoadingDone(true)} />
+      )}
+
+      {debugMode && (
+        <Suspense fallback={null}>
+          <DebugPerfHUD
+            onClose={() => {
+              window.history.replaceState(null, "", window.location.pathname + window.location.search);
+              setDebugMode(false);
+            }}
+          />
+        </Suspense>
       )}
 
       <CustomCursor />
