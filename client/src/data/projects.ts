@@ -63,7 +63,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "Vanilla JS", "WebGL", "AR/XR"],
     link: "https://nexreality.io/projects/lounge-chair/index.html",
     image: "/Lounge_Chair_Configurator.webp",
-    imagePosition: "50% 88%",
+    imagePosition: "50% 92%",
     backgroundColor: "#586a3f"
   },
   {
@@ -73,6 +73,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "3D Modeling"],
     link: "https://nexreality.io/projects/watch/index.html",
     image: "/Watch_Configurator.webp",
+    imagePosition: "50% 50%",
     backgroundColor: "#7c4f58"
   },
   {
@@ -82,7 +83,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "Animation"],
     link: "https://nexreality.io/projects/scientific-exploration/index.html",
     image: "/Scientific_Exploration.webp",
-    imagePosition: "50% 52%",
+    imagePosition: "50% 54%",
     backgroundColor: "#4b2520"
   },
   {
@@ -92,6 +93,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "Custom Shaders", "3D Rendering"],
     link: "https://nexreality.io/projects/medical-education/index.html",
     image: "/Medical_Education.webp",
+    imagePosition: "50% 50%",
     backgroundColor: "#7c242c"
   },
   {
@@ -101,6 +103,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "AR/XR"],
     link: "https://nexreality.io/projects/product-discovery/index.html",
     image: "/Product_Discovery_AR.webp",
+    imagePosition: "50% 48%",
     backgroundColor: "#182c04"
   },
   {
@@ -110,7 +113,7 @@ export const projects: Project[] = [
     tech: ["Three.js", "WebGL", "GSAP", "3D Configurator"],
     link: "https://nexreality.io/projects/comfort-chair/index.html",
     image: "/Comfort_Chair_Configurator.webp",
-    imagePosition: "50% 78%",
+    imagePosition: "50% 82%",
     backgroundColor: "#413934"
   }
 ];
